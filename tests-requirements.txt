@@ -1,0 +1,5 @@
+pytest
+black
+flake8
+pytest-cov
+pytest-random-order
