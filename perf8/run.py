@@ -23,6 +23,13 @@ def _parser():
     )
 
     parser.add_argument(
+        "--refresh-rate",
+        type=int,
+        default=5,
+        help="Refresh rate",
+    )
+
+    parser.add_argument(
         "-c",
         "--command",
         default="dummy.py --with-option -a=2",
@@ -67,23 +74,24 @@ def main(args=None):
 
 
 class WatchedProcess:
-    def __init__(self, args, event_timer=10, plugins=None, options=None):
+    def __init__(self, args, plugins=None, options=None):
         self.args = args
         self.cmd = args.command
         self.proc = self.pid = None
-        self.every = event_timer
+        self.every = args.refresh_rate
         if options is None:
             options = {}
         self.options = options
         if plugins is None:
             plugins = ["perf8._psutil:ResourceWatcher"]
         self.plugins = [self._create_plugin(plugin) for plugin in plugins]
+        self.reports = {}
 
     async def _probe(self):
-        while self.proc.poll() is not None:
+        while self.proc.poll() is None:
             for plugin in self.plugins:
                 await plugin.probe(self.pid)
-            if self.proc.poll() is None:
+            if self.proc.poll() is not None:
                 break
             await asyncio.sleep(self.every)
 
@@ -94,7 +102,7 @@ class WatchedProcess:
 
     def stop(self):
         for plugin in self.plugins:
-            plugin.stop(self.pid)
+            self.reports[plugin.name] = plugin.stop(self.pid)
 
     async def run(self):
         start = time.time()
@@ -112,6 +120,13 @@ class WatchedProcess:
 
         self.proc.wait()
         print(f"[perf8] Total seconds {time.time()-start}")
+        print("[perf8] Reports generated:")
+        for plugin in self.plugins:
+            if plugin.name not in self.reports:
+                continue
+            print(
+                f"[perf8] Plugin {plugin.name} generated {','.join(self.reports[plugin.name])}"
+            )
 
     def _create_plugin(self, fqn):
         # XXX filter options by plugins
