@@ -5,6 +5,8 @@ import time
 import importlib
 import argparse
 import shlex
+import signal
+import os
 
 from perf8 import __version__
 
@@ -86,6 +88,12 @@ class WatchedProcess:
             plugins = ["perf8._psutil:ResourceWatcher"]
         self.plugins = [self._create_plugin(plugin) for plugin in plugins]
         self.reports = {}
+        signal.signal(signal.SIGINT, self.exit)
+        signal.signal(signal.SIGTERM, self.exit)
+
+    def exit(self, signum, frame):
+        print(f"We got a {signum} signal, passing it along")
+        os.kill(self.proc.pid, signum)
 
     async def _probe(self):
         while self.proc.poll() is None:
