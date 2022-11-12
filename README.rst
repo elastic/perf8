@@ -1,6 +1,9 @@
 perf8
 =====
 
+.. image:: https://github.com/tarekziade/perf8/actions/workflows/ci.yml/badge.svg?branch=main
+   :target: https://github.com/tarekziade/perf8/actions/workflows/ci.yml?query=branch%3Amain
+
 Your Tool For Python Performance Tracking
 
 
