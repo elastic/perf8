@@ -24,7 +24,7 @@ def generate_plot(path):
 
     plt.xticks(rotation=25)
     plt.xlabel("Duration")
-    plt.ylabel("Bytes")    # switch to KiB or MiB automatically - XXX
+    plt.ylabel("Bytes")  # switch to KiB or MiB automatically - XXX
     plt.title("Performance Report", fontsize=20)
     plt.grid()
     plt.legend()
