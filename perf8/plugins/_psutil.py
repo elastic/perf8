@@ -3,13 +3,18 @@ import csv
 import matplotlib.pyplot as plt
 import time
 
+from perf8.util import register_plugin
+
 
 class ResourceWatcher:
     name = "psutil"
+    fqn = f"{__module__}:{__qualname__}"
+    in_process = False
+    description = "System metrics with psutil"
 
-    def __init__(self, **options):
+    def __init__(self, args):
         self.report_fd = self.writer = self.proc_info = None
-        self.report_file = options.get("report_file", "report.csv")
+        self.report_file = "report.csv"  # args.get("report_file", "report.csv")
 
     def generate_plot(self, path):
         x = []
@@ -81,3 +86,6 @@ class ResourceWatcher:
             plot_file = self.generate_plot(self.report_file)
             return [plot_file, self.report_file]
         return []
+
+
+register_plugin(ResourceWatcher)

@@ -9,6 +9,7 @@ import signal
 import os
 
 from perf8 import __version__
+from perf8.util import get_registered_plugins
 
 
 def _parser():
@@ -17,12 +18,14 @@ def _parser():
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    parser.add_argument(
-        "--psutil",
-        action="store_true",
-        default=False,
-        help="Track system info",
-    )
+    for plugin in get_registered_plugins():
+        parser.add_argument(
+            f"--{plugin.name}",
+            action="store_true",
+            default=False,
+            help=plugin.description,
+        )
+        # XXX ask the plugin for its arguments and set them in a group
 
     parser.add_argument(
         "--refresh-rate",
@@ -76,17 +79,17 @@ def main(args=None):
 
 
 class WatchedProcess:
-    def __init__(self, args, plugins=None, options=None):
+    def __init__(self, args):
         self.args = args
         self.cmd = args.command
         self.proc = self.pid = None
         self.every = args.refresh_rate
-        if options is None:
-            options = {}
-        self.options = options
-        if plugins is None:
-            plugins = ["perf8._psutil:ResourceWatcher"]
-        self.plugins = [self._create_plugin(plugin) for plugin in plugins]
+        self.plugins = [
+            plugin for plugin in get_registered_plugins() if getattr(args, plugin.name)
+        ]
+        self.out_plugins = [
+            plugin(self.args) for plugin in self.plugins if not plugin.in_process
+        ]
         self.reports = {}
         signal.signal(signal.SIGINT, self.exit)
         signal.signal(signal.SIGTERM, self.exit)
@@ -97,7 +100,7 @@ class WatchedProcess:
 
     async def _probe(self):
         while self.proc.poll() is None:
-            for plugin in self.plugins:
+            for plugin in self.out_plugins:
                 await plugin.probe(self.pid)
             if self.proc.poll() is not None:
                 break
@@ -105,18 +108,30 @@ class WatchedProcess:
 
     def start(self):
         print(f"[perf8] Plugins: {', '.join([p.name for p in self.plugins])}")
-        for plugin in self.plugins:
+        for plugin in self.out_plugins:
             plugin.start(self.pid)
 
     def stop(self):
-        for plugin in self.plugins:
+        for plugin in self.out_plugins:
             self.reports[plugin.name] = plugin.stop(self.pid)
 
     async def run(self):
         start = time.time()
-        print(f"[perf8] Running {shlex.join(self.cmd)}")
+        plugins = [plugin.fqn for plugin in self.plugins if plugin.in_process]
+
+        # XXX pass-through perf8 args so the plugins can pick there options
+        cmd = [
+            sys.executable,
+            "-m",
+            "perf8.runner",
+            "--plugins",
+            ",".join(plugins),
+            "-s",
+        ] + self.cmd
+
+        print(f"[perf8] Running {shlex.join(cmd)}")
         try:
-            self.proc = subprocess.Popen(self.cmd)
+            self.proc = subprocess.Popen(cmd)
             while self.proc.pid is None:
                 await asyncio.sleep(1.0)
             self.pid = self.proc.pid
@@ -136,11 +151,10 @@ class WatchedProcess:
                 f"[perf8] Plugin {plugin.name} generated {','.join(self.reports[plugin.name])}"
             )
 
-    def _create_plugin(self, fqn):
-        # XXX filter options by plugins
+    def _plugin_klass(self, fqn):
         module_name, klass_name = fqn.split(":")
         module = importlib.import_module(module_name)
-        return getattr(module, klass_name)(**self.options)
+        return getattr(module, klass_name)
 
 
 if __name__ == "__main__":

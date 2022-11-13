@@ -18,7 +18,7 @@ make it easier to report performances.
 
 I am including 3 plugins:
 
-- perf8-flameprof - a cProfile flamegraph generator
+- perf8-gprof2dot - a cProfile to dot graph generator
 - perf8-memray - a memory flamegraph generator
 - perf8-psutil - a psutil integration
 
@@ -26,5 +26,5 @@ And they will all run using the same command (and off by default):
 
 .. code-block:: sh
 
-   perf8 --memray --psutil --flameprof /my/pyhton/app.py
+   perf8 --memray --psutil --gprof2dot /my/pyhton/script.py
 
