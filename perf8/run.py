@@ -26,6 +26,13 @@ def _parser():
             help=plugin.description,
         )
         # XXX ask the plugin for its arguments and set them in a group
+    parser.add_argument(
+        "-t",
+        "--target-dir",
+        default=os.getcwd(),
+        type=str,
+        help="target dir for results",
+    )
 
     parser.add_argument(
         "--refresh-rate",
@@ -124,6 +131,8 @@ class WatchedProcess:
             sys.executable,
             "-m",
             "perf8.runner",
+            "-t",
+            self.args.target_dir,
             "--plugins",
             ",".join(plugins),
             "-s",

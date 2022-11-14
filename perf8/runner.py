@@ -1,6 +1,7 @@
 """
 Wrapper script
 """
+import os
 import argparse
 from perf8.util import get_plugin_klass, run_script
 
@@ -10,7 +11,13 @@ def main():
         description="Perf8 Wrapper",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-
+    parser.add_argument(
+        "-t",
+        "--target-dir",
+        default=os.getcwd(),
+        type=str,
+        help="target dir for results",
+    )
     parser.add_argument(
         "--plugins",
         type=str,
@@ -36,8 +43,11 @@ def main():
     # XXX pass-through perf8 args so the plugins can pick there options
     args = parser.parse_args()
 
-    plugins = [get_plugin_klass(fqn)(args) for fqn in args.plugins.split(",")
-               if fqn.strip() != '']
+    plugins = [
+        get_plugin_klass(fqn)(args)
+        for fqn in args.plugins.split(",")
+        if fqn.strip() != ""
+    ]
 
     script = args.script[0]
     script_args = args.script[1:]

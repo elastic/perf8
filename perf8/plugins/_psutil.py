@@ -1,7 +1,9 @@
-import psutil
 import csv
-import matplotlib.pyplot as plt
 import time
+import os
+
+import matplotlib.pyplot as plt
+import psutil
 
 from perf8.util import register_plugin
 
@@ -13,8 +15,9 @@ class ResourceWatcher:
     description = "System metrics with psutil"
 
     def __init__(self, args):
+        self.target_dir = args.target_dir
         self.report_fd = self.writer = self.proc_info = None
-        self.report_file = "report.csv"  # args.get("report_file", "report.csv")
+        self.report_file = os.path.join(args.target_dir, "report.csv")
 
     def generate_plot(self, path):
         x = []
@@ -40,8 +43,9 @@ class ResourceWatcher:
         plt.title("Performance Report", fontsize=20)
         plt.grid()
         plt.legend()
-        plt.savefig("report.png")
-        return "report.png"
+        plot_file = os.path.join(self.target_dir, "report.png")
+        plt.savefig(plot_file)
+        return plot_file
 
     def start(self, pid):
         self.proc_info = psutil.Process(pid)
