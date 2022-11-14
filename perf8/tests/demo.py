@@ -4,15 +4,16 @@ Demo script to test perf8
 import random
 
 data = []
-RANGE = 100000
+RANGE = 100
 
 
 def get_random(min, max):
     return random.randint(min, max)
 
+
 def do_math(x, y):
     x * y
-    y ** x
+    y**x
 
 
 def main():

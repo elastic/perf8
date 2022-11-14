@@ -1,6 +1,3 @@
-import os
-import sys
-from copy import copy
 import gprof2dot
 import pstats
 from subprocess import check_call
@@ -10,7 +7,7 @@ try:
 except ImportError:
     from Profile import Profile
 
-from perf8.util import register_plugin
+from perf8.util import register_plugin, run_script
 
 
 class Profiler:
@@ -23,29 +20,14 @@ class Profiler:
         self.outfile = "profile.data"
         self.flameout = "profile.svg"
 
-    def run(self, command):
-        progname = command[0]
-        extra_args = command[1:]
-
-        code = compile(
-            open(progname, mode="rb").read(), "__main__", "exec", dont_inherit=True
-        )
-        fname = progname
-
-        globs = {}
-        globs["__file__"] = fname
-        globs["__name__"] = "__main__"
-        globs["__package__"] = None
+    def run(self, script, args):
 
         s = Profile()
-        saved = copy(sys.argv[:])
-        sys.argv[:] = [fname] + extra_args
-        sys.path.insert(0, os.path.dirname(progname))
         try:
-            s.runctx(code, globs, None)
+            run_script(script, args, s.runctx)
         except SystemExit:
             pass
-        sys.argv[:] = saved
+
         # create a pstats file
         s.create_stats()
 
@@ -59,6 +41,8 @@ class Profiler:
 
         # render the dot file into a png
         check_call(["dot", "-o", "profile.png", "-Tpng", "profile.dot"])
+
+        return [self.outfile, "profile.dot", "profile.png"]
 
     def stop(self, pid):
         pass

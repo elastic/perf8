@@ -150,6 +150,13 @@ class WatchedProcess:
             print(
                 f"[perf8] Plugin {plugin.name} generated {','.join(self.reports[plugin.name])}"
             )
+        with open("report.txt") as f:
+            for line in f.readlines():
+                line = line.strip().split(":")
+                if len(line) != 2:
+                    continue
+                plugin, reports = line
+                print(f"[perf8] Plugin {plugin} generated {reports}")
 
     def _plugin_klass(self, fqn):
         module_name, klass_name = fqn.split(":")

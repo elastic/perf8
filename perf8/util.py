@@ -1,4 +1,7 @@
 import importlib
+import sys
+from copy import copy
+import os
 
 
 def get_plugin_klass(fqn):
@@ -20,3 +23,31 @@ def get_registered_plugins():
     from perf8 import plugins  # NOQA
 
     return _PLUGINS
+
+
+def get_code(script):
+    with open(script, mode="rb") as f:
+        return compile(f.read(), "__main__", "exec", dont_inherit=True)
+
+
+def run_script(script_file, script_args, wrapper=None):
+    globs = {}
+    globs["__file__"] = script_file
+    globs["__name__"] = "__main__"
+    globs["__package__"] = None
+    saved = copy(sys.argv[:])
+    sys.argv[:] = [script_file] + script_args
+    sys.path.insert(0, os.path.dirname(script_file))
+
+    if wrapper is None:
+
+        def direct_exec(code, globals, locals):
+            exec(code, globals, locals)
+
+        wrapper = direct_exec
+
+    try:
+        wrapper(get_code(script_file), globs, None)
+    except SystemExit:
+        pass
+    sys.argv[:] = saved
