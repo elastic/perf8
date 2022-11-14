@@ -36,7 +36,8 @@ def main():
     # XXX pass-through perf8 args so the plugins can pick there options
     args = parser.parse_args()
 
-    plugins = [get_plugin_klass(fqn)(args) for fqn in args.plugins.split(",")]
+    plugins = [get_plugin_klass(fqn)(args) for fqn in args.plugins.split(",")
+               if fqn.strip() != '']
 
     script = args.script[0]
     script_args = args.script[1:]

@@ -4,7 +4,7 @@ Demo script to test perf8
 import random
 
 data = []
-RANGE = 100
+RANGE = 10000
 
 
 def get_random(min, max):
