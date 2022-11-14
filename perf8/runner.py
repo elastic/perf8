@@ -42,15 +42,18 @@ def main():
     script_args = args.script[1:]
 
     with open(args.report, "w") as f:
-        # does exec() respects signals?
-        if len(plugins) > 0:
-            # running sequentially for now -- need to find a way to combine runs
-            for plugin in plugins:
-                reports = plugin.run(script, script_args)
-                f.write(f"{plugin.name}:{','.join(reports)}\n")
-        else:
-            # no in-process plugins, we just run it
+        for plugin in plugins:
+            plugin.enable()
+        # no in-process plugins, we just run it
+        try:
             run_script(script, script_args)
+        finally:
+            for plugin in reversed(plugins):
+                plugin.disable()
+
+        for plugin in plugins:
+            reports = plugin.report()
+            f.write(f"{plugin.name}:{','.join(reports)}\n")
 
 
 if __name__ == "__main__":

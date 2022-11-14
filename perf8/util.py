@@ -30,7 +30,7 @@ def get_code(script):
         return compile(f.read(), "__main__", "exec", dont_inherit=True)
 
 
-def run_script(script_file, script_args, wrapper=None):
+def run_script(script_file, script_args):
     globs = {}
     globs["__file__"] = script_file
     globs["__name__"] = "__main__"
@@ -38,16 +38,8 @@ def run_script(script_file, script_args, wrapper=None):
     saved = copy(sys.argv[:])
     sys.argv[:] = [script_file] + script_args
     sys.path.insert(0, os.path.dirname(script_file))
-
-    if wrapper is None:
-
-        def direct_exec(code, globals, locals):
-            exec(code, globals, locals)
-
-        wrapper = direct_exec
-
     try:
-        wrapper(get_code(script_file), globs, None)
+        exec(get_code(script_file), globs, None)
     except SystemExit:
         pass
     sys.argv[:] = saved

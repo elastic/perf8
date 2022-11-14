@@ -1,2 +1,2 @@
 # loads plugins
-from perf8.plugins import _psutil, _gprof2dot  # NOQA
+from perf8.plugins import _psutil, _gprof2dot, _memray  # NOQA

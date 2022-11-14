@@ -1,13 +1,14 @@
 import gprof2dot
 import pstats
 from subprocess import check_call
+import sys
 
 try:
     from cProfile import Profile
 except ImportError:
     from Profile import Profile
 
-from perf8.util import register_plugin, run_script
+from perf8.util import register_plugin
 
 
 class Profiler:
@@ -19,19 +20,22 @@ class Profiler:
     def __init__(self, args):
         self.outfile = "profile.data"
         self.flameout = "profile.svg"
+        self.profiler = Profile()
 
-    def run(self, script, args):
+    def get_profiler(self, *args, **kw):
+        return self.profiler
 
-        s = Profile()
-        try:
-            run_script(script, args, s.runctx)
-        except SystemExit:
-            pass
+    def enable(self):
+        self.profiler.enable()
+        sys.setprofile(self.get_profiler)
 
+    def disable(self):
+        self.profiler.disable()
+
+    def report(self):
         # create a pstats file
-        s.create_stats()
-
-        s.dump_stats(self.outfile)
+        self.profiler.create_stats()
+        self.profiler.dump_stats(self.outfile)
         stats = pstats.Stats(self.outfile)
         stats = stats.strip_dirs()
         stats.dump_stats(self.outfile)
@@ -43,9 +47,6 @@ class Profiler:
         check_call(["dot", "-o", "profile.png", "-Tpng", "profile.dot"])
 
         return [self.outfile, "profile.dot", "profile.png"]
-
-    def stop(self, pid):
-        pass
 
 
 register_plugin(Profiler)
