@@ -6,7 +6,8 @@ if sys.version_info < (3, 9):
 
 from perf8 import __version__  # NOQA
 
-install_requires = ["psutil", "matplotlib", "flameprof", "memray"]
+install_requires = ["psutil", "matplotlib", "flameprof", "memray",
+                    "gprof2dot", "py-spy"]
 
 
 description = ""
