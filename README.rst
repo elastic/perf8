@@ -4,14 +4,13 @@ perf8
 .. image:: https://github.com/tarekziade/perf8/actions/workflows/ci.yml/badge.svg?branch=main
    :target: https://github.com/tarekziade/perf8/actions/workflows/ci.yml?query=branch%3Amain
 
+
+**THIS IS ALPHA QUALITY, UNSUPPORTED, RUN AT YOUR OWN RISKS**
+
 Your Tool For Python Performance Tracking
 
 
 `perf8` is a curated list of tools to track the performance of your Python app.
-
-I am creating this tool with the same need I had when I created `Flake8` a while
-ago: the ability to track the performances of my Python applications without
-having to run multiple tools.
 
 The project will be pluggable, but also include a few opinionated wrappers to
 make it easier to report performances.
@@ -26,5 +25,5 @@ And they will all run using the same command (and off by default):
 
 .. code-block:: sh
 
-   perf8 --memray --psutil --gprof2dot /my/pyhton/script.py
+   perf8 --memray --psutil --gprof2dot /my/python/script.py
 

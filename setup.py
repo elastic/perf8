@@ -36,7 +36,7 @@ setup(
     packages=find_packages(),
     long_description=description.strip(),
     description=("Your Tool For Python Performance Tracking"),
-    author="Tarek Ziade",
+    author="Ingestion Team",
     author_email="tarek@ziade.org",
     include_package_data=True,
     zip_safe=False,
