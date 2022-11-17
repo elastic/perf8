@@ -6,3 +6,4 @@ include requirements.txt
 include tests-requirements.txt
 include tox.ini
 include Makefile
+include NOTICE.txt
