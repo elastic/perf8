@@ -25,11 +25,14 @@ import argparse
 import shlex
 import signal
 import os
+import json
+from collections import defaultdict
 
 from perf8 import __version__
 from perf8.util import get_registered_plugins
 
 HERE = os.path.dirname(__file__)
+TEMPLATE = os.path.join(HERE, "report.html.tmpl")
 
 
 def _parser():
@@ -46,14 +49,21 @@ def _parser():
             help=plugin.description,
         )
         # XXX ask the plugin for its arguments and set them in a group
+
     parser.add_argument(
         "-t",
         "--target-dir",
-        default=os.getcwd(),
+        default=os.path.join(os.getcwd(), "perf8-report"),
         type=str,
         help="target dir for results",
     )
-
+    parser.add_argument(
+        "-r",
+        "--report",
+        default="report.html",
+        type=str,
+        help="report file",
+    )
     parser.add_argument(
         "--refresh-rate",
         type=int,
@@ -119,7 +129,8 @@ class WatchedProcess:
         self.out_plugins = [
             plugin(self.args) for plugin in self.plugins if not plugin.in_process
         ]
-        self.reports = {}
+        self.reports = defaultdict(list)
+        os.makedirs(self.args.target_dir, exist_ok=True)
         signal.signal(signal.SIGINT, self.exit)
         signal.signal(signal.SIGTERM, self.exit)
 
@@ -142,7 +153,7 @@ class WatchedProcess:
 
     def stop(self):
         for plugin in self.out_plugins:
-            self.reports[plugin.name] = plugin.stop(self.pid)
+            self.reports[plugin.name].extend(plugin.stop(self.pid))
 
     async def run(self):
         start = time.time()
@@ -172,20 +183,38 @@ class WatchedProcess:
 
         self.proc.wait()
         print(f"[perf8] Total seconds {time.time()-start}")
+
+        # read report.json to extend the list
+        with open(os.path.join(self.args.target_dir, "report.json")) as f:
+            reports = json.loads(f.read())
+
+            for report in reports["reports"]:
+                self.reports[report["name"]].append(report)
+
         print("[perf8] Reports generated:")
         for plugin in self.plugins:
             if plugin.name not in self.reports:
                 continue
             print(
-                f"[perf8] Plugin {plugin.name} generated {','.join(self.reports[plugin.name])}"
+                f"[perf8] Plugin {plugin.name} generated {len(self.reports[plugin.name])} report(s)"
             )
-        with open("report.txt") as f:
-            for line in f.readlines():
-                line = line.strip().split(":")
-                if len(line) != 2:
-                    continue
-                plugin, reports = line
-                print(f"[perf8] Plugin {plugin} generated {reports}")
+
+        # generating meta remport
+        with open(TEMPLATE) as f:
+            render = f.read()
+
+        reports = []
+        for reporter in self.reports.values():
+            for report in reporter:
+                reports.append(
+                    f"<li><a href='{report['file']}'>{report['label']}</a></li>"
+                )
+
+        html_report = os.path.join(self.args.target_dir, self.args.report)
+        with open(html_report, "w") as f:
+            f.write(render % {"reports": "\n".join(reports)})
+
+        print(f"Find the full report at {html_report}")
 
     def _plugin_klass(self, fqn):
         module_name, klass_name = fqn.split(":")

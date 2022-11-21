@@ -64,7 +64,10 @@ class Profiler:
         # render the dot file into a png
         check_call(["dot", "-o", "profile.png", "-Tpng", "profile.dot"])
 
-        return [self.outfile, "profile.dot", "profile.png"]
+        return [
+            {"label": "gprof2dot dot file", "file": "profile.dot"},
+            {"label": "gprof2dot png output", "file": "profile.png"},
+        ]
 
 
 register_plugin(Profiler)

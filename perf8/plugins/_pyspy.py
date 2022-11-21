@@ -69,7 +69,7 @@ class PySpy:
     def stop(self, pid):
         os.kill(self.proc.pid, signal.SIGTERM)
 
-        return [self.profile_file]
+        return [{"label": "spy-py flamegraph", "file": self.profile_file}]
 
 
 register_plugin(PySpy)

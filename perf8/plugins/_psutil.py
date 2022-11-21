@@ -103,11 +103,15 @@ class ResourceWatcher:
         self.report_fd.flush()
 
     def stop(self, pid):
-        if self.report_fd is not None:
-            self.report_fd.close()
-            plot_file = self.generate_plot(self.report_file)
-            return [plot_file, self.report_file]
-        return []
+        if self.report_fd is None:
+            return []
+
+        self.report_fd.close()
+        plot_file = self.generate_plot(self.report_file)
+        return [
+            {"label": "psutil memory report", "file": plot_file},
+            {"label": "psutil csv data", "file": self.report_file},
+        ]
 
 
 register_plugin(ResourceWatcher)

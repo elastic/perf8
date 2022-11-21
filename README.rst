@@ -18,6 +18,7 @@ make it easier to report performances.
 I am including 3 plugins:
 
 - perf8-gprof2dot - a cProfile to dot graph generator
+- perf8-spypy - a spy-py flamegraph generator
 - perf8-memray - a memory flamegraph generator
 - perf8-psutil - a psutil integration
 
@@ -25,5 +26,5 @@ And they will all run using the same command (and off by default):
 
 .. code-block:: sh
 
-   perf8 --memray --psutil --gprof2dot /my/python/script.py
+   perf8 --memray --psutil --spypy /my/python/script.py
 

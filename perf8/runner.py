@@ -21,7 +21,7 @@ Wrapper script
 """
 import os
 import argparse
-
+import json
 from perf8.util import get_plugin_klass, run_script
 
 
@@ -46,7 +46,7 @@ def main():
     parser.add_argument(
         "-r",
         "--report",
-        default="report.txt",
+        default="report.json",
         type=str,
         help="report file",
     )
@@ -71,9 +71,8 @@ def main():
     script = args.script[0]
     script_args = args.script[1:]
 
-    with open(args.report, "w") as f:
-        for plugin in plugins:
-            plugin.enable()
+    for plugin in plugins:
+        plugin.enable()
         # no in-process plugins, we just run it
         try:
             run_script(script, script_args)
@@ -81,9 +80,17 @@ def main():
             for plugin in reversed(plugins):
                 plugin.disable()
 
-        for plugin in plugins:
-            reports = plugin.report()
-            f.write(f"{plugin.name}:{','.join(reports)}\n")
+    # sending back the reports to the main process through json
+    reports = []
+    for plugin in plugins:
+        for report in plugin.report():
+            report["name"] = plugin.name
+            reports.append(report)
+
+    report = os.path.join(args.target_dir, args.report)
+    with open(report, "w") as f:
+        f.write(json.dumps({"reports": reports}))
+    print(f"Wrote {report}")
 
 
 if __name__ == "__main__":

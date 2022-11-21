@@ -78,7 +78,10 @@ class MemoryProfiler:
             pass
 
         sys.argv[:] = old_args
-        return [self.report_path, self.outfile]
+        return [
+            {"label": "memray flamegraph", "file": self.report_path},
+            {"label": "memray dump report", "file": self.outfile},
+        ]
 
 
 register_plugin(MemoryProfiler)
