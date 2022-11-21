@@ -206,8 +206,9 @@ class WatchedProcess:
         reports = []
         for reporter in self.reports.values():
             for report in reporter:
+                relative = os.path.basename(report['file'])
                 reports.append(
-                    f"<li><a href='{report['file']}'>{report['label']}</a></li>"
+                    f"<li><a href='{relative}'>{report['label']}</a></li>"
                 )
 
         html_report = os.path.join(self.args.target_dir, self.args.report)
