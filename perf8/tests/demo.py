@@ -24,7 +24,7 @@ import random
 import os
 
 data = []
-RANGE = 100000
+RANGE = 1000
 
 
 def get_random(min, max):
@@ -44,11 +44,25 @@ def do_math(x, y):
     math2(x, y)
 
 
+def add_mem1():
+    data.append("r" * get_random(100, 2000))
+
+
+def add_mem2():
+    data.append("r" * get_random(100, 2000))
+    add_mem3()
+
+
+def add_mem3():
+    data.append("r" * get_random(100, 20000))
+
+
 # generates one GiB in RSS
 def main():
     for i in range(RANGE):
-        data.append(get_random(1, 3722837687624) ** 4)
-        data.append("r" * get_random(100, 20000))
+        add_mem1()
+        add_mem2()
+
         if get_random(1, 20) == 2:
             print(f"[{os.getpid()}] Busy adding data! ({i}/{RANGE})")
             try:

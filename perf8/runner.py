@@ -21,6 +21,7 @@ Wrapper script
 """
 import os
 import argparse
+
 from perf8.util import get_plugin_klass, run_script
 
 

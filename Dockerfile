@@ -20,5 +20,4 @@ RUN pip3 install -r requirements.txt && \
 	pip3 install .
 
 
-CMD ["perf8", "--pyspy", "--psutil", "-t", "/results", "-c", "/app/perf8/tests/demo.py"]
-
+CMD perf8 --memray --pyspy --psutil -t /results -c "/app/perf8/tests/demo.py"

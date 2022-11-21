@@ -16,11 +16,25 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+from importlib_metadata import distribution
 from memray import Tracker, FileDestination  # , FileReader
+import os
+import sys
+from copy import copy
 
 # from memray.reporters.flamegraph import FlameGraphReporter
 
 from perf8.util import register_plugin
+
+
+def load_entry_point(spec, group, name):
+    dist_name, _, _ = spec.partition("==")
+    matches = (
+        entry_point
+        for entry_point in distribution(dist_name).entry_points
+        if entry_point.group == group and entry_point.name == name
+    )
+    return next(matches).load()
 
 
 class MemoryProfiler:
@@ -30,13 +44,24 @@ class MemoryProfiler:
     description = "Runs memray and generates a flamegraph"
 
     def __init__(self, args):
-        self.outfile = "memory.bin"
+        self.outfile = os.path.join(args.target_dir, "memreport")
         self.destination = FileDestination(
             path=self.outfile, overwrite=True, compress_on_exit=True
         )
+        if os.path.exists(self.outfile):
+            os.remove(self.outfile)
 
-        # native = True
-        self.tracker = Tracker(destination=self.destination, native_traces=False)
+        self.report_path = os.path.join(
+            args.target_dir, "memray-flamegraph-report.html"
+        )
+        if os.path.exists(self.report_path):
+            os.remove(self.report_path)
+        self.tracker = Tracker(
+            destination=self.destination,
+            # native_traces=True,
+            follow_fork=True,
+            trace_python_allocators=True,
+        )
 
     def enable(self):
         self.tracker.__enter__()
@@ -45,15 +70,15 @@ class MemoryProfiler:
         self.tracker.__exit__(None, None, None)
 
     def report(self):
-        return []
+        old_args = copy(sys.argv)
+        sys.argv[:] = ["memray", "flamegraph", self.outfile, "-o", self.report_path]
+        try:
+            load_entry_point("memray", "console_scripts", "memray")()
+        except SystemExit:
+            pass
 
-        # reader = FileReader(self.outfile)
-        # reporter = FlameGraphReporter.from_snapshot(
-        #    reader.get_allocation_records(),
-        #    memory_records=reader.get_memory_snapshots(),
-        #    native_traces=False,
-        # )
-        # return ["flamegraph.png"]
+        sys.argv[:] = old_args
+        return [self.report_path, self.outfile]
 
 
 register_plugin(MemoryProfiler)

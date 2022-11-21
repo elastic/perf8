@@ -19,7 +19,8 @@
 import importlib
 import sys
 from copy import copy
-import os
+import runpy
+import pathlib
 
 
 def get_plugin_klass(fqn):
@@ -49,15 +50,12 @@ def get_code(script):
 
 
 def run_script(script_file, script_args):
-    globs = {}
-    globs["__file__"] = script_file
-    globs["__name__"] = "__main__"
-    globs["__package__"] = None
     saved = copy(sys.argv[:])
-    sys.argv[:] = [script_file] + script_args
-    sys.path.insert(0, os.path.dirname(script_file))
+    sys.path[0] = str(pathlib.Path(script_file).resolve().parent.absolute())
+    sys.argv[:] = [script_file, *script_args]
     try:
-        exec(get_code(script_file), globs, None)
+        runpy.run_path(script_file, run_name="__main__")
     except SystemExit:
         pass
+
     sys.argv[:] = saved

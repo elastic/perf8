@@ -29,6 +29,8 @@ import os
 from perf8 import __version__
 from perf8.util import get_registered_plugins
 
+HERE = os.path.dirname(__file__)
+
 
 def _parser():
     parser = argparse.ArgumentParser(
@@ -62,7 +64,7 @@ def _parser():
     parser.add_argument(
         "-c",
         "--command",
-        default="dummy.py --with-option -a=2",
+        default=os.path.join(HERE, "tests", "demo.py"),
         type=str,
         nargs=argparse.REMAINDER,
         help="Command to run",
@@ -107,6 +109,8 @@ class WatchedProcess:
     def __init__(self, args):
         self.args = args
         self.cmd = args.command
+        if not isinstance(self.cmd, str):
+            self.cmd = shlex.join(self.cmd)
         self.proc = self.pid = None
         self.every = args.refresh_rate
         self.plugins = [
@@ -145,16 +149,14 @@ class WatchedProcess:
         plugins = [plugin.fqn for plugin in self.plugins if plugin.in_process]
 
         # XXX pass-through perf8 args so the plugins can pick there options
-        cmd = [
-            sys.executable,
-            "-m",
-            "perf8.runner",
-            "-t",
-            self.args.target_dir,
-            "--plugins",
-            ",".join(plugins),
-            "-s",
-        ] + self.cmd
+        cmd = [sys.executable, "-m", "perf8.runner", "-t", self.args.target_dir]
+
+        if len(plugins) > 0:
+            cmd.extend(["--plugins", ",".join(plugins)])
+
+        cmd.extend(["-s", self.cmd])
+
+        cmd = [str(item) for item in cmd]
 
         print(f"[perf8] Running {shlex.join(cmd)}")
         try:

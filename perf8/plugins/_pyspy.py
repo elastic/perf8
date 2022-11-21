@@ -17,12 +17,16 @@
 # under the License.
 #
 import os
+import sys
 import subprocess
 import shutil
 import signal
 from sys import platform
 
 from perf8.util import register_plugin
+
+
+PYSPY = "py-spy"
 
 
 class PySpy:
@@ -33,18 +37,30 @@ class PySpy:
 
     def __init__(self, args):
         self.target_dir = args.target_dir
-        self.pyspy = shutil.which("py-spy")
+        location = os.path.join(os.path.dirname(sys.executable), PYSPY)
+        if os.path.exists(location):
+            self.pyspy = location
+        else:
+            self.pyspy = shutil.which(PYSPY)
         if self.pyspy is None:
             raise Exception("Cannot find py-spy")
 
         # could be in the plugin metadata
         if platform not in ("linux", "linux2"):
-            raise Exception(f"pyspy not supported on {platform}")
+            print(f"pyspy support on {platform} is not great")
         self.profile_file = os.path.join(self.target_dir, "pyspy.svg")
         self.proc = None
 
     def start(self, pid):
-        command = [self.pyspy, "record", "-o", self.profile_file, "--pid", str(pid)]
+        command = [
+            self.pyspy,
+            "record",
+            "-s",
+            "-o",
+            self.profile_file,
+            "--pid",
+            str(pid),
+        ]
         self.proc = subprocess.Popen(command)
 
     async def probe(self, pid):

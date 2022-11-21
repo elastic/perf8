@@ -4,3 +4,4 @@ flameprof>=0.4
 memray
 gprof2dot
 py-spy
+importlib-metadata
