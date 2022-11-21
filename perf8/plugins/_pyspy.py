@@ -48,7 +48,7 @@ class PySpy:
         # could be in the plugin metadata
         if platform not in ("linux", "linux2"):
             print(f"pyspy support on {platform} is not great")
-        self.profile_file = os.path.join(self.target_dir, "pyspy.svg")
+        self.profile_file = os.path.join(self.target_dir, "speedscope.json")
         self.proc = None
 
     def start(self, pid):
@@ -56,6 +56,7 @@ class PySpy:
             self.pyspy,
             "record",
             "-s",
+            "--format", "speedscope",
             "-o",
             self.profile_file,
             "--pid",
@@ -69,7 +70,7 @@ class PySpy:
     def stop(self, pid):
         os.kill(self.proc.pid, signal.SIGTERM)
 
-        return [{"label": "spy-py flamegraph", "file": self.profile_file}]
+        return [{"label": "py-spy speedscope (open file in https://www.speedscope.app/)", "file": self.profile_file}]
 
 
 register_plugin(PySpy)
