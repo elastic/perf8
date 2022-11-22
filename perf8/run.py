@@ -224,7 +224,7 @@ class WatchedProcess:
                     "reports": "\n".join(reports),
                     "version": __version__,
                     "created_at": datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S"),
-                    "title": self.args.title
+                    "title": self.args.title,
                 }
             )
 

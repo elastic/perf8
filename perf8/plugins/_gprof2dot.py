@@ -16,10 +16,11 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import gprof2dot
+import shutil
 import pstats
 from subprocess import check_call
 import sys
+import os
 
 try:
     from cProfile import Profile
@@ -27,6 +28,8 @@ except ImportError:
     from Profile import Profile
 
 from perf8.util import register_plugin
+
+GPROF2DOT = "gprof2dot"
 
 
 class Profiler:
@@ -36,9 +39,16 @@ class Profiler:
     description = "Runs cProfile and generate a dot graph with gprof2dot"
 
     def __init__(self, args):
-        self.outfile = "profile.data"
-        self.flameout = "profile.svg"
+        self.target_dir = args.target_dir
+        self.outfile = os.path.join(self.target_dir, "profile.data")
+        self.dotfile = os.path.join(self.target_dir, "profile.dot")
+        self.pngfile = os.path.join(self.target_dir, "profile.png")
         self.profiler = Profile()
+        location = os.path.join(os.path.dirname(sys.executable), GPROF2DOT)
+        if os.path.exists(location):
+            self.gprof2dot = location
+        else:
+            self.gprof2dot = shutil.which(GPROF2DOT)
 
     def get_profiler(self, *args, **kw):
         return self.profiler
@@ -59,14 +69,25 @@ class Profiler:
         stats.dump_stats(self.outfile)
 
         # create a dot file from the pstats file
-        gprof2dot.main(["-f", "pstats", self.outfile, "-o", "profile.dot"])
+        check_call(
+            [
+                sys.executable,
+                self.gprof2dot,
+                "-f",
+                "pstats",
+                self.outfile,
+                "-o",
+                self.dotfile,
+            ]
+        )
 
         # render the dot file into a png
-        check_call(["dot", "-o", "profile.png", "-Tpng", "profile.dot"])
+        check_call(["dot", "-o", self.pngfile, "-Tpng", self.dotfile])
 
         return [
-            {"label": "gprof2dot dot file", "file": "profile.dot"},
-            {"label": "gprof2dot png output", "file": "profile.png"},
+            {"label": "gprof2dot dot file", "file": self.dotfile},
+            {"label": "gprof2dot png output", "file": self.pngfile},
+            {"label": "cProfile pstats file", "file": self.outfile},
         ]
 
 
