@@ -1,8 +1,22 @@
 <html>
+<head>
+<link rel="stylesheet" href="https://unpkg.com/chota@latest">
+
+</head>
 <body>
-  <h1>Perf8 Meta Report</h1>
-  <ul>
-    %(reports)s
-  </ul>
+  <div id="top" class="container" role="document">
+    <header role="banner">
+      <h1 class="pull-right" style="margin: 0;">
+        <a href="javascript:void(0)" onclick="switchMode(this)">☀️</a>
+      </h1>
+      <h1>Perf8</h1>
+      <div class="clearfix"></div>
+      <p>Performance Report.</p>
+    </header>
+
+    <ul>
+      %(reports)s
+    </ul>
+  </div>
 </body>
 </html>
