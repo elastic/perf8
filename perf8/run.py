@@ -27,6 +27,7 @@ import signal
 import os
 import json
 from collections import defaultdict
+import datetime
 
 from perf8 import __version__
 from perf8.util import get_registered_plugins
@@ -56,6 +57,12 @@ def _parser():
         default=os.path.join(os.getcwd(), "perf8-report"),
         type=str,
         help="target dir for results",
+    )
+    parser.add_argument(
+        "--title",
+        default="Performance Report",
+        type=str,
+        help="String used for the report title",
     )
     parser.add_argument(
         "-r",
@@ -206,14 +213,20 @@ class WatchedProcess:
         reports = []
         for reporter in self.reports.values():
             for report in reporter:
-                relative = os.path.basename(report['file'])
-                reports.append(
-                    f"<li><a href='{relative}'>{report['label']}</a></li>"
-                )
+                relative = os.path.basename(report["file"])
+                reports.append(f"<li><a href='{relative}'>{report['label']}</a></li>")
 
         html_report = os.path.join(self.args.target_dir, self.args.report)
         with open(html_report, "w") as f:
-            f.write(render % {"reports": "\n".join(reports)})
+            f.write(
+                render
+                % {
+                    "reports": "\n".join(reports),
+                    "version": __version__,
+                    "created_at": datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S"),
+                    "title": self.args.title
+                }
+            )
 
         print(f"Find the full report at {html_report}")
 

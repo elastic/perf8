@@ -56,7 +56,8 @@ class PySpy:
             self.pyspy,
             "record",
             "-s",
-            "--format", "speedscope",
+            "--format",
+            "speedscope",
             "-o",
             self.profile_file,
             "--pid",
@@ -70,7 +71,12 @@ class PySpy:
     def stop(self, pid):
         os.kill(self.proc.pid, signal.SIGTERM)
 
-        return [{"label": "py-spy speedscope (open file in https://www.speedscope.app/)", "file": self.profile_file}]
+        return [
+            {
+                "label": "py-spy speedscope (open file in https://www.speedscope.app/)",
+                "file": self.profile_file,
+            }
+        ]
 
 
 register_plugin(PySpy)
