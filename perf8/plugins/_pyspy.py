@@ -73,7 +73,7 @@ class PySpy:
 
         return [
             {
-                "label": "py-spy speedscope (open file in https://www.speedscope.app/)",
+                "label": f"py-spy speedscope. open file in https://www.speedscope.app or run `speedscope {self.profile_file}`)",
                 "file": self.profile_file,
             }
         ]
