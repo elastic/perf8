@@ -33,7 +33,8 @@ from perf8 import __version__
 from perf8.util import get_registered_plugins
 
 HERE = os.path.dirname(__file__)
-TEMPLATE = os.path.join(HERE, "report.html.tmpl")
+MENU_TEMPLATE = os.path.join(HERE, "templates", "menu.html.tmpl")
+INDEX_TEMPLATE = os.path.join(HERE, "templates", "index.html.tmpl")
 
 
 def _parser():
@@ -207,16 +208,22 @@ class WatchedProcess:
             )
 
         # generating meta remport
-        with open(TEMPLATE) as f:
+        with open(MENU_TEMPLATE) as f:
             render = f.read()
 
         reports = []
+        first_page = None
+
         for reporter in self.reports.values():
             for report in reporter:
                 relative = os.path.basename(report["file"])
-                reports.append(f"<li><a href='{relative}'>{report['label']}</a></li>")
+                if first_page is None:
+                    first_page = relative
+                reports.append(
+                    f"<li><a href='{relative}' target='content'>{report['label']}</a></li>"
+                )
 
-        html_report = os.path.join(self.args.target_dir, self.args.report)
+        html_report = os.path.join(self.args.target_dir, "menu.html")
         with open(html_report, "w") as f:
             f.write(
                 render
@@ -227,6 +234,12 @@ class WatchedProcess:
                     "title": self.args.title,
                 }
             )
+
+        with open(INDEX_TEMPLATE) as f:
+            render = f.read()
+        html_report = os.path.join(self.args.target_dir, "index.html")
+        with open(html_report, "w") as f:
+            f.write(render % {"default_page": first_page, "title": self.args.title})
 
         print(f"Find the full report at {html_report}")
 

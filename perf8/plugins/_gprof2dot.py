@@ -85,9 +85,9 @@ class Profiler:
         check_call(["dot", "-o", self.pngfile, "-Tpng", self.dotfile])
 
         return [
-            {"label": "gprof2dot dot file", "file": self.dotfile},
-            {"label": "gprof2dot png output", "file": self.pngfile},
-            {"label": "cProfile pstats file", "file": self.outfile},
+            {"label": "gprof2dot dot file", "file": self.dotfile, "type": "artifact"},
+            {"label": "gprof2dot png output", "file": self.pngfile, "type": "image"},
+            {"label": "cProfile pstats file", "file": self.outfile, "type": "artifact"},
         ]
 
 

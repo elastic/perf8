@@ -109,8 +109,8 @@ class ResourceWatcher:
         self.report_fd.close()
         plot_file = self.generate_plot(self.report_file)
         return [
-            {"label": "psutil memory report", "file": plot_file},
-            {"label": "psutil csv data", "file": self.report_file},
+            {"label": "psutil memory report", "file": plot_file, "type": "image"},
+            {"label": "psutil csv data", "file": self.report_file, "type": "artifact"},
         ]
 
 
