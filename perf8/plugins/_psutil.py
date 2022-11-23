@@ -111,16 +111,37 @@ class ResourceWatcher:
         def extract_cpu(row):
             return float(row[6])
 
+        def extract_fds(row):
+            return int(row[1])
+
+        def extract_th(row):
+            return int(row[2])
+
+        def extract_ctx(row):
+            return int(row[3])
+
         plot_file = self.generate_plot(
             self.report_file, extract_memory, "Memory Usage (RSS)", "Bytes", "rss.png"
         )
         cpu_plot_file = self.generate_plot(
             self.report_file, extract_cpu, "CPU%", "%", "cpu.png"
         )
+        th_plot_file = self.generate_plot(
+            self.report_file, extract_fds, "Threads", "ths", "threads.png"
+        )
+        fds_plot_file = self.generate_plot(
+            self.report_file, extract_th, "File Descriptors", "FDs", "fds.png"
+        )
+        ctx_plot_file = self.generate_plot(
+            self.report_file, extract_ctx, "Context Switches", "ctx", "ctx.png"
+        )
 
         return [
             {"label": "Memory Usage", "file": plot_file, "type": "image"},
             {"label": "CPU Usage", "file": cpu_plot_file, "type": "image"},
+            {"label": "Threads", "file": th_plot_file, "type": "image"},
+            {"label": "FDs", "file": fds_plot_file, "type": "image"},
+            {"label": "Context Switch", "file": ctx_plot_file, "type": "image"},
             {"label": "psutil CSV data", "file": self.report_file, "type": "artifact"},
         ]
 
