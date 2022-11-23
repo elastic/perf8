@@ -212,11 +212,19 @@ class WatchedProcess:
             render = f.read()
 
         reports = []
+        artifacts = []
         first_page = None
 
         for reporter in self.reports.values():
             for report in reporter:
                 relative = os.path.basename(report["file"])
+                if report["type"] == "artifact":
+                    artifacts.append(
+                        f"<li><a href='{relative}' download='{relative}' target='_blank'>{report['label']}</a></li>"
+                    )
+
+                    continue
+
                 if first_page is None:
                     first_page = relative
                 reports.append(
@@ -229,6 +237,7 @@ class WatchedProcess:
                 render
                 % {
                     "reports": "\n".join(reports),
+                    "artifacts": "\n".join(artifacts),
                     "version": __version__,
                     "created_at": datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S"),
                     "title": self.args.title,

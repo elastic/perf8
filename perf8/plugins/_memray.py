@@ -79,8 +79,8 @@ class MemoryProfiler:
 
         sys.argv[:] = old_args
         return [
-            {"label": "memray flamegraph", "file": self.report_path, "type": "html"},
-            {"label": "memray dump report", "file": self.outfile, "type": "artifact"},
+            {"label": "Memory Flamegraph", "file": self.report_path, "type": "html"},
+            {"label": "memray dump", "file": self.outfile, "type": "artifact"},
         ]
 
 

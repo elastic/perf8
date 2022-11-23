@@ -7,5 +7,4 @@ include tests-requirements.txt
 include tox.ini
 include Makefile
 include NOTICE.txt
-include perf8/report.html.tmpl
-
+recursive-include perf8/templates *.tmpl

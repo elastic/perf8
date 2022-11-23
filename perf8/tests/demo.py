@@ -24,7 +24,7 @@ import random
 import os
 
 data = []
-RANGE = 1000
+RANGE = 50000
 
 
 def get_random(min, max):

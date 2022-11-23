@@ -37,10 +37,9 @@ class ResourceWatcher:
         self.report_fd = self.writer = self.proc_info = None
         self.report_file = os.path.join(args.target_dir, "report.csv")
 
-    def generate_plot(self, path):
+    def generate_plot(self, path, extract_field, title, ylabel, target):
         x = []
-        rss = []
-        # cpu = []
+        y = []
 
         with open(path) as csvfile:
             lines = csv.reader(csvfile, delimiter=",")
@@ -48,20 +47,18 @@ class ResourceWatcher:
                 if i == 0:
                     continue
                 x.append(row[-1])
-                bytes = round(int(row[0]) / (1024 * 1024), 2)
-                rss.append(bytes)  # rss
-                # cpu.append(row[-1])
+                y.append(extract_field(row))
 
-        # plt.plot(x, cpu, color="r", linestyle="dashed", marker="o", label="CPU %")
-        plt.plot(x, rss, color="g", linestyle="dashed", marker="o", label="RSS")
+        plt.cla()
+        plt.plot(x, y, color="g", linestyle="dashed", marker="o", label=title)
 
         plt.xticks(rotation=25)
         plt.xlabel("Duration")
-        plt.ylabel("Bytes")  # switch to KiB or MiB automatically - XXX
-        plt.title("Performance Report", fontsize=20)
+        plt.ylabel(ylabel)
+        plt.title(title, fontsize=20)
         plt.grid()
         plt.legend()
-        plot_file = os.path.join(self.target_dir, "report.png")
+        plot_file = os.path.join(self.target_dir, target)
         plt.savefig(plot_file)
         return plot_file
 
@@ -107,10 +104,24 @@ class ResourceWatcher:
             return []
 
         self.report_fd.close()
-        plot_file = self.generate_plot(self.report_file)
+
+        def extract_memory(row):
+            return round(int(row[0]) / (1024 * 1024), 2)
+
+        def extract_cpu(row):
+            return float(row[6])
+
+        plot_file = self.generate_plot(
+            self.report_file, extract_memory, "Memory Usage (RSS)", "Bytes", "rss.png"
+        )
+        cpu_plot_file = self.generate_plot(
+            self.report_file, extract_cpu, "CPU%", "%", "cpu.png"
+        )
+
         return [
-            {"label": "psutil memory report", "file": plot_file, "type": "image"},
-            {"label": "psutil csv data", "file": self.report_file, "type": "artifact"},
+            {"label": "Memory Usage", "file": plot_file, "type": "image"},
+            {"label": "CPU Usage", "file": cpu_plot_file, "type": "image"},
+            {"label": "psutil CSV data", "file": self.report_file, "type": "artifact"},
         ]
 
 
