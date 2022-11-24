@@ -17,6 +17,7 @@
 # under the License.
 #
 import sys
+import re
 from setuptools import setup, find_packages
 
 if sys.version_info < (3, 9):
@@ -24,8 +25,15 @@ if sys.version_info < (3, 9):
 
 from perf8 import __version__  # NOQA
 
-install_requires = ["psutil", "matplotlib", "flameprof", "memray",
-                    "gprof2dot", "py-spy", "importlib-metadata"]
+install_requires = []
+with open("requirements.txt") as f:
+    reqs = f.readlines()
+    for req in reqs:
+        req = req.strip()
+        if req == "" or req.startswith("#"):
+            continue
+        requirement = re.split(">|=", req)[0]
+        install_requires.append(requirement)
 
 
 description = ""
