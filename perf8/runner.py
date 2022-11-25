@@ -22,6 +22,8 @@ Wrapper script
 import os
 import argparse
 import json
+import shlex
+
 from perf8.util import get_plugin_klass, run_script
 
 
@@ -68,8 +70,10 @@ def main():
         if fqn.strip() != ""
     ]
 
-    script = args.script[0]
-    script_args = args.script[1:]
+    cmd_line = shlex.split(args.script[0])
+
+    script = cmd_line[0]
+    script_args = cmd_line[1:]
 
     for plugin in plugins:
         plugin.enable()
