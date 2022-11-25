@@ -9,6 +9,8 @@ perf8
 
 Your Tool For Python Performance Tracking
 
+.. image:: docs/perf8-screencast.gif
+
 
 `perf8` is a curated list of tools to track the performance of your Python app.
 
