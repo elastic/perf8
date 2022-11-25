@@ -9,24 +9,22 @@ perf8
 
 Your Tool For Python Performance Tracking
 
-.. image:: docs/perf8-screencast.gif
-
-
 `perf8` is a curated list of tools to track the performance of your Python app.
 
-The project will be pluggable, but also include a few opinionated wrappers to
-make it easier to report performances.
-
-I am including 3 plugins:
+The project is pluggable, and ships with a few tools:
 
 - perf8-gprof2dot - a cProfile to dot graph generator
 - perf8-spypy - a spy-py flamegraph generator
 - perf8-memray - a memory flamegraph generator
 - perf8-psutil - a psutil integration
 
-And they will all run using the same command (and off by default):
+Running the `perf8` command against your Python module:
 
 .. code-block:: sh
 
    perf8 --memray --psutil --spypy /my/python/script.py
 
+Will generate a self-contained HTML report, making it suitable for
+running it in automation and produce performance artifacts.
+
+.. image:: docs/perf8-screencast.gif
