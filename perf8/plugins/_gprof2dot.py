@@ -55,7 +55,6 @@ class Profiler:
 
     def enable(self):
         self.profiler.enable()
-        sys.setprofile(self.get_profiler)
 
     def disable(self):
         self.profiler.disable()
