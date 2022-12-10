@@ -73,7 +73,7 @@ class PySpy:
 
         return [
             {
-                "label": "Memory speedscope",
+                "label": "Performance speedscope",
                 "file": self.profile_file,
                 "type": "artifact",
             }
