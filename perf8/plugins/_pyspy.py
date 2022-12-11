@@ -22,11 +22,13 @@ import subprocess
 import shutil
 import signal
 from sys import platform
+import base64
 
 from perf8.util import register_plugin
 
 
 PYSPY = "py-spy"
+SPEEDSCOPE_APP = os.path.join(os.path.dirname(__file__), "..", "speedscope")
 
 
 class PySpy:
@@ -71,12 +73,40 @@ class PySpy:
     def stop(self, pid):
         os.kill(self.proc.pid, signal.SIGTERM)
 
+        # copy over the speedscope dir
+        speedscope_copy = os.path.join(self.target_dir, "speedscope")
+        if os.path.exists(speedscope_copy):
+            shutil.rmtree(speedscope_copy)
+        shutil.copytree(SPEEDSCOPE_APP, speedscope_copy)
+
+        # create the js script that contains the base64-ed results
+        with open(self.profile_file, "rb") as f:
+            data = f.read()
+        data = base64.b64encode(data).strip().decode()
+
+        # create the javascript file
+        js_data = f"speedscope.loadFileFromBase64('speedscope.json', '{data}')"
+        result_js = os.path.abspath(os.path.join(self.target_dir, "results.js"))
+
+        with open(result_js, "w") as f:
+            f.write(js_data)
+
+        with open(os.path.join(self.target_dir, "pyspy.html"), "w") as f:
+            f.write(
+                f'<script>window.location="speedscope/index.html#localProfilePath={result_js}"</script>'
+            )
+
         return [
             {
                 "label": "Performance speedscope",
                 "file": self.profile_file,
                 "type": "artifact",
-            }
+            },
+            {
+                "label": "Py-spy Performance",
+                "file": os.path.join(self.target_dir, "pyspy.html"),
+                "type": "html",
+            },
         ]
 
 

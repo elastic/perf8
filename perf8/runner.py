@@ -63,6 +63,7 @@ def main():
 
     # XXX pass-through perf8 args so the plugins can pick there options
     args = parser.parse_args()
+    args.target_dir = os.path.abspath(args.target_dir)
 
     plugins = [
         get_plugin_klass(fqn)(args)

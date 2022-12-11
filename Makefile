@@ -29,7 +29,7 @@ lint: $(PYTHON)
 	$(BIN)/tox -e flake8
 
 docker-run:
-	docker run -v $(PWD)/results:/results --cap-add sys_ptrace --rm --name perf8 -it perf8
+	docker run -v $(PWD):/app --cap-add sys_ptrace --rm --name perf8 -it perf8
 
 docker-build:
 	docker build -t perf8 . --progress plain
