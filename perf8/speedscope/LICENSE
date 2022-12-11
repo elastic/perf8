@@ -1,11 +1,3 @@
-perf8
-
-Copyright 2022 Elasticsearch B.V.
-
----
-
-This product contains a vendored copy of the speedscope project in `perf8/speedscope` so we can display speedscope reports directly via the `perf8` report.
-
 MIT License
 
 Copyright (c) 2018 Jamie Wong
@@ -27,6 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
