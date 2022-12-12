@@ -27,22 +27,21 @@ try:
 except ImportError:
     from Profile import Profile
 
-from perf8.util import register_plugin
+from perf8.plugins.base import BasePlugin, register_plugin
+
 
 GPROF2DOT = "gprof2dot"
 
 
-class Profiler:
+class Profiler(BasePlugin):
     name = "cprofile"
-    fqn = f"{__module__}:{__qualname__}"
     in_process = True
-    is_async = False
     description = "Runs cProfile and generate a dot graph with gprof2dot"
     priority = 0
     supported = True
 
     def __init__(self, args):
-        self.target_dir = args.target_dir
+        super().__init__(args)
         self.outfile = os.path.join(self.target_dir, "profile.data")
         self.dotfile = os.path.join(self.target_dir, "profile.dot")
         self.pngfile = os.path.join(self.target_dir, "profile.png")

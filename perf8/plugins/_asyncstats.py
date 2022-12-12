@@ -17,25 +17,20 @@
 # under the License.
 #
 import os
-import matplotlib.pyplot as plt
 import csv
 import time
 import asyncio
 
-from perf8.util import register_plugin
+from perf8.plugins.base import AsyncBasePlugin, register_plugin
 
 
-class EventLoopMonitoring:
+class EventLoopMonitoring(AsyncBasePlugin):
     name = "asyncstats"
-    fqn = f"{__module__}:{__qualname__}"
     in_process = True
     description = "Stats on the event loop"
-    is_async = True
-    priority = 0
-    supported = True
 
     def __init__(self, args):
-        self.target_dir = args.target_dir
+        super().__init__(args)
         self.loop = self._prober = self.started_at = None
         self._idle_time = 1
         self._running = False
@@ -77,31 +72,6 @@ class EventLoopMonitoring:
         if self._prober is not None:
             await asyncio.sleep(0)
             await self._prober
-
-    def generate_plot(self, path, extract_field, title, ylabel, target):
-        x = []
-        y = []
-
-        with open(path) as csvfile:
-            lines = csv.reader(csvfile, delimiter=",")
-            for i, row in enumerate(lines):
-                if i == 0:
-                    continue
-                x.append(row[-1])
-                y.append(extract_field(row))
-
-        plt.cla()
-        plt.plot(x, y, color="g", linestyle="dashed", marker="o", label=title)
-
-        plt.xticks(rotation=25)
-        plt.xlabel("Duration")
-        plt.ylabel(ylabel)
-        plt.title(title, fontsize=20)
-        plt.grid()
-        plt.legend()
-        plot_file = os.path.join(self.target_dir, target)
-        plt.savefig(plot_file)
-        return plot_file
 
     def report(self):
         if self.report_fd is None:

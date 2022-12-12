@@ -24,23 +24,23 @@ import signal
 from sys import platform
 import base64
 
-from perf8.util import register_plugin
+from perf8.plugins.base import BasePlugin, register_plugin
 
 
 PYSPY = "py-spy"
 SPEEDSCOPE_APP = os.path.join(os.path.dirname(__file__), "..", "speedscope")
 
 
-class PySpy:
+class PySpy(BasePlugin):
     name = "pyspy"
     fqn = f"{__module__}:{__qualname__}"
-    is_async = in_process = False
+    in_process = False
     description = "Sampling profiler for Python"
     priority = 0
     supported = platform in ("linux", "linux2")
 
     def __init__(self, args):
-        self.target_dir = args.target_dir
+        super().__init__(args)
         location = os.path.join(os.path.dirname(sys.executable), PYSPY)
         if os.path.exists(location):
             self.pyspy = location
@@ -68,9 +68,6 @@ class PySpy:
             str(pid),
         ]
         self.proc = subprocess.Popen(command)
-
-    async def probe(self, pid):
-        pass
 
     def stop(self, pid):
         os.kill(self.proc.pid, signal.SIGTERM)

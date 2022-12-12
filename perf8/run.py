@@ -30,7 +30,7 @@ from collections import defaultdict
 import datetime
 
 from perf8 import __version__
-from perf8.util import get_registered_plugins
+from perf8.plugins.base import get_registered_plugins
 
 HERE = os.path.dirname(__file__)
 MENU_TEMPLATE = os.path.join(HERE, "templates", "menu.html.tmpl")
@@ -131,7 +131,7 @@ def main(args=None):
 
     if args.all:
         for plugin in get_registered_plugins():
-            if plugin.name == "gprof2dot":
+            if plugin.name == "cprofile":
                 args.gprof2dot = False
             else:
                 setattr(args, plugin.name.replace("-", "_"), True)

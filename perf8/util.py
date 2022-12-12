@@ -31,22 +31,6 @@ def get_plugin_klass(fqn):
     return getattr(module, klass_name)
 
 
-_PLUGINS = []
-
-
-def register_plugin(klass):
-    if klass.supported:
-        _PLUGINS.append(klass)
-
-
-def get_registered_plugins():
-    # this import will load all internal plugins modules
-    # so they have a chance to register them selves
-    from perf8 import plugins  # NOQA
-
-    return _PLUGINS
-
-
 def get_code(script):
     with open(script, mode="rb") as f:
         return compile(f.read(), "__main__", "exec", dont_inherit=True)

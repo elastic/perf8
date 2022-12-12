@@ -22,9 +22,7 @@ import os
 import sys
 from copy import copy
 
-# from memray.reporters.flamegraph import FlameGraphReporter
-
-from perf8.util import register_plugin
+from perf8.plugins.base import BasePlugin, register_plugin
 
 
 def load_entry_point(spec, group, name):
@@ -37,16 +35,13 @@ def load_entry_point(spec, group, name):
     return next(matches).load()
 
 
-class MemoryProfiler:
+class MemoryProfiler(BasePlugin):
     name = "memray"
-    fqn = f"{__module__}:{__qualname__}"
     in_process = True
     description = "Runs memray and generates a flamegraph"
-    is_async = False
-    priority = 10
-    supported = True
 
     def __init__(self, args):
+        super().__init__(args)
         self.outfile = os.path.join(args.target_dir, "memreport")
         self.destination = FileDestination(
             path=self.outfile, overwrite=True, compress_on_exit=True
