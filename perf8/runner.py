@@ -23,9 +23,25 @@ import os
 import argparse
 import json
 import shlex
+import sys
+from copy import copy
+import runpy
+import pathlib
 
-from perf8.util import run_script
+
 from perf8.plugins.base import get_plugin_klass, set_plugins
+
+
+def run_script(script_file, script_args):
+    saved = copy(sys.argv[:])
+    sys.path[0] = str(pathlib.Path(script_file).resolve().parent.absolute())
+    sys.argv[:] = [script_file, *script_args]
+    try:
+        runpy.run_path(script_file, run_name="__main__")
+    except SystemExit:
+        pass
+
+    sys.argv[:] = saved
 
 
 def main():
