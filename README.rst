@@ -13,7 +13,7 @@ Your Tool For Python Performance Tracking
 
 The project is pluggable, and ships with a few tools:
 
-- gprof2dot - a cProfile to dot graph generator
+- cprofile - a cProfile to Dot graph generator
 - pyspy - a py-spy speedscope generator
 - memray - a memory flamegraph generator
 - psutil - a psutil integration

@@ -33,7 +33,7 @@ GPROF2DOT = "gprof2dot"
 
 
 class Profiler:
-    name = "gprof2dot"
+    name = "cprofile"
     fqn = f"{__module__}:{__qualname__}"
     in_process = True
     is_async = False
@@ -87,8 +87,8 @@ class Profiler:
         check_call(["dot", "-o", self.pngfile, "-Tpng", self.dotfile])
 
         return [
-            {"label": "gprof2dot dot file", "file": self.dotfile, "type": "artifact"},
-            {"label": "gprof2dot png output", "file": self.pngfile, "type": "image"},
+            {"label": "cProfile dot file", "file": self.dotfile, "type": "artifact"},
+            {"label": "cProfile png output", "file": self.pngfile, "type": "image"},
             {"label": "cProfile pstats file", "file": self.outfile, "type": "artifact"},
         ]
 
