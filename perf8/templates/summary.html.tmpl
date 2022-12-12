@@ -10,22 +10,18 @@
   <div id="top" class="container" role="document">
     <header role="banner">
       <h1 class="pull-right" style="margin: 0;">
-      <h1>Perf8</h1>
+      <h1>Summary</h1>
       <div class="clearfix"></div>
-      <p><small><i>
-        v%(version)s. Created at %(created_at)s.
-       </i></small></p>
     </header>
-
-    <a href="summary.html" target='content'>Summary</a>
-
-    <h2>Reports</h2>
+    <h3>
+      Script executed 
+    </h3>
+    <pre>%(command)s</pre>
+    <h3>
+      Plugins used
+    </h3>
     <ul>
-      %(reports)s
-    </ul>
-    <h2>Artifacts</h2>
-    <ul>
-      %(artifacts)s
+      %(plugins)s
     </ul>
   </div>
 </body>

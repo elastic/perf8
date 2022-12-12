@@ -35,6 +35,7 @@ from perf8.plugins.base import get_registered_plugins
 HERE = os.path.dirname(__file__)
 MENU_TEMPLATE = os.path.join(HERE, "templates", "menu.html.tmpl")
 INDEX_TEMPLATE = os.path.join(HERE, "templates", "index.html.tmpl")
+SUMMARY_TEMPLATE = os.path.join(HERE, "templates", "summary.html.tmpl")
 
 
 def parser():
@@ -231,7 +232,6 @@ class WatchedProcess:
 
         reports = []
         artifacts = []
-        first_page = None
 
         for reporter in self.reports.values():
             for report in reporter:
@@ -243,8 +243,6 @@ class WatchedProcess:
 
                     continue
 
-                if first_page is None:
-                    first_page = relative
                 reports.append(
                     f"<li><a href='{relative}' target='content'>{report['label']}</a></li>"
                 )
@@ -266,7 +264,24 @@ class WatchedProcess:
             render = f.read()
         html_report = os.path.join(self.args.target_dir, "index.html")
         with open(html_report, "w") as f:
-            f.write(render % {"default_page": first_page, "title": self.args.title})
+            f.write(render % {"default_page": "summary.html", "title": self.args.title})
+
+        # summary
+        plugins = [
+            f"<li>{plugin.name} -- {plugin.description}</li>" for plugin in self.plugins
+        ]
+        with open(SUMMARY_TEMPLATE) as f:
+            render = f.read()
+        summary_page = os.path.join(self.args.target_dir, "summary.html")
+        with open(summary_page, "w") as f:
+            f.write(
+                render
+                % {
+                    "command": " ".join(self.args.command),
+                    "title": self.args.title,
+                    "plugins": "\n".join(plugins),
+                }
+            )
 
         print(f"Find the full report at {html_report}")
 
