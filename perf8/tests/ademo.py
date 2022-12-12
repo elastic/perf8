@@ -25,7 +25,7 @@ import os
 import asyncio
 from time import time
 
-from perf8.util import enable, disable
+from perf8 import enable, disable
 
 
 data = []

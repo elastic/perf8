@@ -70,6 +70,6 @@ setup(
     install_requires=install_requires,
     entry_points="""
       [console_scripts]
-      perf8 = perf8.run:main
+      perf8 = perf8.cli:main
       """,
 )

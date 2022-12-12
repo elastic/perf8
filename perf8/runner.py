@@ -24,7 +24,8 @@ import argparse
 import json
 import shlex
 
-from perf8.util import get_plugin_klass, run_script, set_plugins
+from perf8.util import run_script
+from perf8.plugins.base import get_plugin_klass, set_plugins
 
 
 def main():

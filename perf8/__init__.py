@@ -17,3 +17,9 @@
 # under the License.
 #
 __version__ = "0.0.0"
+
+
+try:
+    from perf8.plugins.base import enable, disable  # NOQA
+except Exception:
+    pass

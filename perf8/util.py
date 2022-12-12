@@ -16,52 +16,15 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import os
-import asyncio
-import importlib
 import sys
 from copy import copy
 import runpy
 import pathlib
 
 
-def get_plugin_klass(fqn):
-    module_name, klass_name = fqn.split(":")
-    module = importlib.import_module(module_name)
-    return getattr(module, klass_name)
-
-
 def get_code(script):
     with open(script, mode="rb") as f:
         return compile(f.read(), "__main__", "exec", dont_inherit=True)
-
-
-_ASYNC_PLUGINS = []
-_ALL_PLUGINS = {}
-
-
-def set_plugins(plugins):
-    for plugin in plugins:
-        _ALL_PLUGINS[plugin.name] = plugin
-
-
-async def enable(loop=None):
-    if "PERF8" not in os.environ:
-        return
-
-    if loop is None:
-        loop = asyncio.get_event_loop()
-
-    for name in os.environ["PERF8_ASYNC_PLUGIN"].split(","):
-        plugin = _ALL_PLUGINS[name]
-        await plugin.enable(loop)
-        _ASYNC_PLUGINS.append(plugin)
-
-
-async def disable():
-    for plugin in _ASYNC_PLUGINS:
-        await plugin.disable()
-    _ASYNC_PLUGINS[:] = []
 
 
 def run_script(script_file, script_args):

@@ -16,18 +16,53 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import importlib
+import asyncio
 import csv
 import os
-
 import matplotlib.pyplot as plt
 
 
-_PLUGINS = []
+_ASYNC_PLUGINS_INSTANCES = []
+_PLUGINS_INSTANCES = {}
+
+
+def get_plugin_klass(fqn):
+    module_name, klass_name = fqn.split(":")
+    module = importlib.import_module(module_name)
+    return getattr(module, klass_name)
+
+
+def set_plugins(plugins):
+    for plugin in plugins:
+        _PLUGINS_INSTANCES[plugin.name] = plugin
+
+
+async def enable(loop=None):
+    if "PERF8" not in os.environ:
+        return
+
+    if loop is None:
+        loop = asyncio.get_event_loop()
+
+    for name in os.environ["PERF8_ASYNC_PLUGIN"].split(","):
+        plugin = _PLUGINS_INSTANCES[name]
+        await plugin.enable(loop)
+        _ASYNC_PLUGINS_INSTANCES.append(plugin)
+
+
+async def disable():
+    for plugin in _ASYNC_PLUGINS_INSTANCES:
+        await plugin.disable()
+    _ASYNC_PLUGINS_INSTANCES[:] = []
+
+
+_PLUGIN_CLASSES = []
 
 
 def register_plugin(klass):
     if klass.supported:
-        _PLUGINS.append(klass)
+        _PLUGIN_CLASSES.append(klass)
 
 
 def get_registered_plugins():
@@ -35,7 +70,7 @@ def get_registered_plugins():
     # so they have a chance to register them selves
     from perf8 import plugins  # NOQA
 
-    return _PLUGINS
+    return _PLUGIN_CLASSES
 
 
 class BasePlugin:
