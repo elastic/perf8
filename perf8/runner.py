@@ -24,7 +24,7 @@ import argparse
 import json
 import shlex
 
-from perf8.util import get_plugin_klass, run_script
+from perf8.util import get_plugin_klass, run_script, set_plugins
 
 
 def main():
@@ -39,6 +39,7 @@ def main():
         type=str,
         help="target dir for results",
     )
+
     parser.add_argument(
         "--plugins",
         type=str,
@@ -71,18 +72,33 @@ def main():
         if fqn.strip() != ""
     ]
 
+    plugins.sort(key=lambda x: -x.priority)
+    set_plugins(plugins)
+
     cmd_line = shlex.split(args.script[0])
 
     script = cmd_line[0]
     script_args = cmd_line[1:]
 
+    os.environ["PERF8"] = "1"
+    async_plugins = []
+
     for plugin in plugins:
-        plugin.enable()
-        # no in-process plugins, we just run it
-        try:
-            run_script(script, script_args)
-        finally:
-            for plugin in reversed(plugins):
+        # async plugins are activated inside the target app
+        if not plugin.is_async:
+            plugin.enable()
+        else:
+            async_plugins.append(plugin.name)
+
+    os.environ["PERF8_ASYNC_PLUGIN"] = ",".join(async_plugins)
+    os.environ["PERF8"] = "1"
+
+    # no in-process plugins, we just run it
+    try:
+        run_script(script, script_args)
+    finally:
+        for plugin in reversed(plugins):
+            if not plugin.is_async:
                 plugin.disable()
 
     # sending back the reports to the main process through json

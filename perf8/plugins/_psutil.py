@@ -29,8 +29,10 @@ from perf8.util import register_plugin
 class ResourceWatcher:
     name = "psutil"
     fqn = f"{__module__}:{__qualname__}"
-    in_process = False
+    is_async = in_process = False
     description = "System metrics with psutil"
+    priority = 0
+    supported = True
 
     def __init__(self, args):
         self.target_dir = args.target_dir

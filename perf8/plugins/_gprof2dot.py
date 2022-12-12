@@ -36,7 +36,10 @@ class Profiler:
     name = "gprof2dot"
     fqn = f"{__module__}:{__qualname__}"
     in_process = True
+    is_async = False
     description = "Runs cProfile and generate a dot graph with gprof2dot"
+    priority = 0
+    supported = True
 
     def __init__(self, args):
         self.target_dir = args.target_dir

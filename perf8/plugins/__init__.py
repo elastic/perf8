@@ -17,4 +17,4 @@
 # under the License.
 #
 # loads plugins
-from perf8.plugins import _psutil, _gprof2dot, _memray, _pyspy  # NOQA
+from perf8.plugins import _psutil, _gprof2dot, _memray, _pyspy, _asyncstats  # NOQA

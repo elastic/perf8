@@ -42,6 +42,9 @@ class MemoryProfiler:
     fqn = f"{__module__}:{__qualname__}"
     in_process = True
     description = "Runs memray and generates a flamegraph"
+    is_async = False
+    priority = 10
+    supported = True
 
     def __init__(self, args):
         self.outfile = os.path.join(args.target_dir, "memreport")

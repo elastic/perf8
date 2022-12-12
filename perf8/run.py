@@ -37,14 +37,14 @@ MENU_TEMPLATE = os.path.join(HERE, "templates", "menu.html.tmpl")
 INDEX_TEMPLATE = os.path.join(HERE, "templates", "index.html.tmpl")
 
 
-def _parser():
-    parser = argparse.ArgumentParser(
+def parser():
+    aparser = argparse.ArgumentParser(
         description="Python Performance Tracking.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     for plugin in get_registered_plugins():
-        parser.add_argument(
+        aparser.add_argument(
             f"--{plugin.name}",
             action="store_true",
             default=False,
@@ -52,34 +52,33 @@ def _parser():
         )
         # XXX ask the plugin for its arguments and set them in a group
 
-    parser.add_argument(
+    aparser.add_argument(
         "-t",
         "--target-dir",
         default=os.path.join(os.getcwd(), "perf8-report"),
         type=str,
         help="target dir for results",
     )
-    parser.add_argument(
+    aparser.add_argument(
         "--title",
         default="Performance Report",
         type=str,
         help="String used for the report title",
     )
-    parser.add_argument(
+    aparser.add_argument(
         "-r",
         "--report",
         default="report.html",
         type=str,
         help="report file",
     )
-    parser.add_argument(
+    aparser.add_argument(
         "--refresh-rate",
         type=int,
         default=5,
         help="Refresh rate",
     )
-
-    parser.add_argument(
+    aparser.add_argument(
         "-c",
         "--command",
         default=os.path.join(HERE, "tests", "demo.py"),
@@ -88,14 +87,21 @@ def _parser():
         help="Command to run",
     )
 
-    parser.add_argument(
+    aparser.add_argument(
+        "--all",
+        action="store_true",
+        default=False,
+        help="Use all plugins",
+    )
+
+    aparser.add_argument(
         "--version",
         action="store_true",
         default=False,
         help="Displays version and exits.",
     )
 
-    parser.add_argument(
+    aparser.add_argument(
         "-v",
         "--verbose",
         action="count",
@@ -106,17 +112,29 @@ def _parser():
         ),
     )
 
-    return parser
+    return aparser
 
 
 def main(args=None):
+    os.environ["PERF8_ARGS"] = "::".join(sys.argv[1:])
+
     if args is None:
-        parser = _parser()
-        args = parser.parse_args()
+        aparser = parser()
+        args = aparser.parse_args()
 
     if args.version:
         print(__version__)
         sys.exit(0)
+
+    if args.memray and args.gprof2dot:
+        raise Exception("You can't use --memray and --gprof2dot at the same time")
+
+    if args.all:
+        for plugin in get_registered_plugins():
+            if plugin.name == "gprof2dot":
+                args.gprof2dot = False
+            else:
+                setattr(args, plugin.name.replace("-", "_"), True)
 
     p = WatchedProcess(args)
     asyncio.run(p.run())

@@ -13,25 +13,64 @@ Your Tool For Python Performance Tracking
 
 The project is pluggable, and ships with a few tools:
 
-- perf8-gprof2dot - a cProfile to dot graph generator
-- perf8-pyspy - a py-spy speedscope generator
-- perf8-memray - a memory flamegraph generator
-- perf8-psutil - a psutil integration
+- gprof2dot - a cProfile to dot graph generator
+- pyspy - a py-spy speedscope generator
+- memray - a memory flamegraph generator
+- psutil - a psutil integration
+- asyncstats - stats on the asyncio eventloop usage (for async apps)
 
 Running the `perf8` command against your Python module:
 
 .. code-block:: sh
 
-   perf8 --memray --psutil --pyspy /my/python/script.py
+   perf8 --all /my/python/script.py
 
 Will generate a self-contained HTML report, making it suitable for
 running it in automation and produce performance artifacts.
 
-Py-spy does not work on the latest macOS, you can switch to gprof2dot:
+You can pick specific plugins. Run `perf --help` and use the ones you want.
 
-.. code-block:: sh
 
-   perf8 --memray --psutil --gprofdot /my/python/script.py
+Async applications
+------------------
+
+Running the `asyncstats` plugin requires to provide your application event loop.
+In order to do this, you need to instrumente your application to give `perf8`
+the loop to watch. You can use the `enable` and `disable` coroutines:
+
+.. code-block:: python
+
+   from perf8 import enable, disable
+
+
+   async def my_app():
+        await enable(my_loop)
+        try:
+            # my code
+            await run_app()
+        finally:
+            await disable()
+
+
+To avoid running this code in production you can use the `PERF8` environment variable
+to detect if `perf8` is calling your app:
+
+
+.. code-block:: python
+
+   import os
+   from perf8 import enable, disable
+
+   if 'PERF8' in os.environ:
+       async def my_app():
+           await enable(my_loop)
+           try:
+               # my code
+               await run_app()
+            finally:
+                await disable()
+    else:
+        my_app = run_app
 
 
 

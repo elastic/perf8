@@ -34,8 +34,10 @@ SPEEDSCOPE_APP = os.path.join(os.path.dirname(__file__), "..", "speedscope")
 class PySpy:
     name = "pyspy"
     fqn = f"{__module__}:{__qualname__}"
-    in_process = False
+    is_async = in_process = False
     description = "Sampling profiler for Python"
+    priority = 0
+    supported = platform in ("linux", "linux2")
 
     def __init__(self, args):
         self.target_dir = args.target_dir
@@ -48,7 +50,7 @@ class PySpy:
             raise Exception("Cannot find py-spy")
 
         # could be in the plugin metadata
-        if platform not in ("linux", "linux2"):
+        if not self.supported:
             print(f"pyspy support on {platform} is not great")
         self.profile_file = os.path.join(self.target_dir, "speedscope.json")
         self.proc = None
