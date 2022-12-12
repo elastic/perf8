@@ -29,7 +29,7 @@ from perf8 import enable, disable
 
 
 data = []
-RANGE = 5000
+RANGE = 50000
 
 
 def get_random(min, max):

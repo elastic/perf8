@@ -32,7 +32,7 @@ class EventLoopMonitoring(AsyncBasePlugin):
     def __init__(self, args):
         super().__init__(args)
         self.loop = self._prober = self.started_at = None
-        self._idle_time = 1
+        self._idle_time = 5
         self._running = False
         self.report_fd = self.writer = self.proc_info = None
         self.report_file = os.path.join(args.target_dir, "loop.csv")

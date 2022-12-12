@@ -35,21 +35,21 @@ Async applications
 ------------------
 
 Running the `asyncstats` plugin requires to provide your application event loop.
+
 In order to do this, you need to instrumente your application to give `perf8`
 the loop to watch. You can use the `enable` and `disable` coroutines:
 
 .. code-block:: python
 
-   from perf8 import enable, disable
-
+   import perf8
 
    async def my_app():
-        await enable(my_loop)
+        await perf8.enable(my_loop)
         try:
             # my code
             await run_app()
         finally:
-            await disable()
+            await perf8.disable()
 
 
 To avoid running this code in production you can use the `PERF8` environment variable
@@ -59,19 +59,23 @@ to detect if `perf8` is calling your app:
 .. code-block:: python
 
    import os
-   from perf8 import enable, disable
 
    if 'PERF8' in os.environ:
+
+       import perf8
+
        async def my_app():
-           await enable(my_loop)
+           await perf8.enable(my_loop)
            try:
                # my code
                await run_app()
             finally:
-                await disable()
+                await perf8.disable()
     else:
         my_app = run_app
 
 
+Screencast
+----------
 
 .. image:: docs/perf8-screencast.gif
