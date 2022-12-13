@@ -34,6 +34,29 @@ async def test_watcher():
         psutil = True
         cprofile = True
         memray = True
+        asyncstats = False
+        pyspy = True
+        target_dir = tempfile.mkdtemp()
+
+    try:
+        watcher = WatchedProcess(Args())
+
+        await watcher.run()
+        assert os.path.exists(os.path.join(Args.target_dir, "index.html"))
+    finally:
+        shutil.rmtree(Args.target_dir)
+
+
+@pytest.mark.asyncio
+async def test_async_watcher():
+    os.environ["RANGE"] = "10"
+
+    class Args:
+        command = os.path.join(os.path.dirname(__file__), "ademo.py")
+        refresh_rate = 0.1
+        psutil = True
+        cprofile = True
+        memray = True
         asyncstats = True
         pyspy = True
         target_dir = tempfile.mkdtemp()
