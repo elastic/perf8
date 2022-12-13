@@ -51,7 +51,7 @@ class EventLoopMonitoring(AsyncBasePlugin):
             )
             self.writer.writerow(metrics)
 
-    async def enable(self, loop):
+    async def _enable(self, loop):
         self.loop = loop
         self.report_fd = open(self.report_file, "w")
         self.writer = csv.writer(self.report_fd)
@@ -67,7 +67,7 @@ class EventLoopMonitoring(AsyncBasePlugin):
         self._running = True
         self._prober = asyncio.create_task(self._probe())
 
-    async def disable(self):
+    async def _disable(self):
         self._running = False
         if self._prober is not None:
             await asyncio.sleep(0)

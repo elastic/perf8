@@ -84,16 +84,27 @@ class BasePlugin:
     def __init__(self, args):
         self.args = args
         self.target_dir = args.target_dir
+        self.enabled = False
 
     @classmethod
     @property
     def fqn(cls):
         return f"{cls.__module__}:{cls.__qualname__}"
 
+    def disable(self):
+        if not self.enabled:
+            return
+        self._disable()
+
     def enable(self):
+        if self.enabled:
+            return
+        self._enable()
+
+    def _enable(self):
         raise NotImplementedError
 
-    def disable(self):
+    def _disable(self):
         raise NotImplementedError
 
     def report(self):
@@ -131,8 +142,18 @@ class BasePlugin:
 class AsyncBasePlugin(BasePlugin):
     is_async = True
 
+    async def disable(self):
+        if not self.enabled:
+            return
+        await self._disable()
+
     async def enable(self, loop):
+        if self.enabled:
+            return
+        await self._enable(loop)
+
+    async def _enable(self, loop):
         raise NotImplementedError
 
-    async def disable(self):
+    async def _disable(self):
         raise NotImplementedError

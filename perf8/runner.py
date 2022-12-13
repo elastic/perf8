@@ -27,6 +27,7 @@ import sys
 from copy import copy
 import runpy
 import pathlib
+import signal
 
 from perf8.logger import logger
 from perf8.plugins.base import get_plugin_klass, set_plugins
@@ -36,11 +37,7 @@ def run_script(script_file, script_args):
     saved = copy(sys.argv[:])
     sys.path[0] = str(pathlib.Path(script_file).resolve().parent.absolute())
     sys.argv[:] = [script_file, *script_args]
-    try:
-        runpy.run_path(script_file, run_name="__main__")
-    except SystemExit:
-        pass
-
+    runpy.run_path(script_file, run_name="__main__")
     sys.argv[:] = saved
 
 
@@ -110,25 +107,36 @@ def main():
     os.environ["PERF8_ASYNC_PLUGIN"] = ",".join(async_plugins)
     os.environ["PERF8"] = "1"
 
+    # we disable plugins right away on SIGTERM / SIGINT
+    def _exit(signum, frame):
+        for plugin in reversed(plugins):
+            if not plugin.is_async and plugin.in_process:
+                plugin.disable()
+        # re-raise interrupt
+        raise SystemExit()
+
+    signal.signal(signal.SIGINT, _exit)
+    signal.signal(signal.SIGTERM, _exit)
+
     # no in-process plugins, we just run it
     try:
         run_script(script, script_args)
     finally:
         for plugin in reversed(plugins):
-            if not plugin.is_async:
+            if not plugin.is_async and plugin.in_process:
                 plugin.disable()
 
-    # sending back the reports to the main process through json
-    reports = []
-    for plugin in plugins:
-        for report in plugin.report():
-            report["name"] = plugin.name
-            reports.append(report)
+        # sending back the reports to the main process through json
+        reports = []
+        for plugin in plugins:
+            for report in plugin.report():
+                report["name"] = plugin.name
+                reports.append(report)
 
-    report = os.path.join(args.target_dir, args.report)
-    with open(report, "w") as f:
-        f.write(json.dumps({"reports": reports}))
-    logger.info(f"Wrote {report}")
+        report = os.path.join(args.target_dir, args.report)
+        with open(report, "w") as f:
+            f.write(json.dumps({"reports": reports}))
+        logger.info(f"Wrote {report}")
 
 
 if __name__ == "__main__":

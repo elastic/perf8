@@ -55,10 +55,10 @@ class Profiler(BasePlugin):
     def get_profiler(self, *args, **kw):
         return self.profiler
 
-    def enable(self):
+    def _enable(self):
         self.profiler.enable()
 
-    def disable(self):
+    def _disable(self):
         self.profiler.disable()
 
     def report(self):

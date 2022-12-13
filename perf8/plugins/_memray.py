@@ -61,10 +61,10 @@ class MemoryProfiler(BasePlugin):
             trace_python_allocators=True,
         )
 
-    def enable(self):
+    def _enable(self):
         self.tracker.__enter__()
 
-    def disable(self):
+    def _disable(self):
         self.tracker.__exit__(None, None, None)
 
     def report(self):
