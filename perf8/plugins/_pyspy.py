@@ -25,6 +25,7 @@ from sys import platform
 import base64
 
 from perf8.plugins.base import BasePlugin, register_plugin
+from perf8.logger import logger
 
 
 PYSPY = "py-spy"
@@ -51,7 +52,7 @@ class PySpy(BasePlugin):
 
         # could be in the plugin metadata
         if not self.supported:
-            print(f"pyspy support on {platform} is not great")
+            logger.info(f"pyspy support on {platform} is not great")
         self.profile_file = os.path.join(self.target_dir, "speedscope.json")
         self.proc = None
 

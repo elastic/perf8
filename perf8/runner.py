@@ -28,7 +28,7 @@ from copy import copy
 import runpy
 import pathlib
 
-
+from perf8.logger import logger
 from perf8.plugins.base import get_plugin_klass, set_plugins
 
 
@@ -128,7 +128,7 @@ def main():
     report = os.path.join(args.target_dir, args.report)
     with open(report, "w") as f:
         f.write(json.dumps({"reports": reports}))
-    print(f"Wrote {report}")
+    logger.info(f"Wrote {report}")
 
 
 if __name__ == "__main__":

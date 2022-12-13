@@ -23,6 +23,7 @@ from collections import defaultdict
 
 from jinja2 import Environment, FileSystemLoader
 from perf8 import __version__
+from perf8.logger import logger
 
 
 HERE = os.path.dirname(__file__)
@@ -57,12 +58,12 @@ class Reporter:
             for report in data["reports"]:
                 reports[report["name"]].append(report)
 
-        print("[perf8] Reports generated:")
+        logger.info("Reports generated:")
         for plugin in plugins:
             if plugin.name not in reports:
                 continue
-            print(
-                f"[perf8] Plugin {plugin.name} generated {len(reports[plugin.name])} report(s)"
+            logger.info(
+                f"Plugin {plugin.name} generated {len(reports[plugin.name])} report(s)"
             )
 
         # generating menu

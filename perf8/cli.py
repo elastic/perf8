@@ -26,10 +26,12 @@ import shlex
 import signal
 import os
 from collections import defaultdict
+import logging
 
 from perf8 import __version__
 from perf8.plugins.base import get_registered_plugins
 from perf8.reporter import Reporter
+from perf8.logger import logger, set_logger
 
 
 HERE = os.path.dirname(__file__)
@@ -134,6 +136,11 @@ def main(args=None):
             else:
                 setattr(args, plugin.name.replace("-", "_"), True)
 
+    if args.verbose > 0:
+        set_logger(logging.DEBUG)
+    else:
+        set_logger(logging.INFO)
+
     p = WatchedProcess(args)
     asyncio.run(p.run())
     return 0
@@ -159,7 +166,7 @@ class WatchedProcess:
         signal.signal(signal.SIGTERM, self.exit)
 
     def exit(self, signum, frame):
-        print(f"We got a {signum} signal, passing it along")
+        logger.info(f"We got a {signum} signal, passing it along")
         os.kill(self.proc.pid, signum)
 
     async def _probe(self):
@@ -171,7 +178,7 @@ class WatchedProcess:
             await asyncio.sleep(self.every)
 
     def start(self):
-        print(f"[perf8] Plugins: {', '.join([p.name for p in self.plugins])}")
+        logger.info(f"[perf8] Plugins: {', '.join([p.name for p in self.plugins])}")
         for plugin in self.out_plugins:
             plugin.start(self.pid)
 
@@ -193,7 +200,7 @@ class WatchedProcess:
 
         cmd = [str(item) for item in cmd]
 
-        print(f"[perf8] Running {shlex.join(cmd)}")
+        logger.info(f"[perf8] Running {shlex.join(cmd)}")
         try:
             self.proc = subprocess.Popen(cmd)
             while self.proc.pid is None:
@@ -206,15 +213,12 @@ class WatchedProcess:
             self.stop()
 
         self.proc.wait()
-        print(f"[perf8] Total seconds {time.time()-start}")
+        logger.info(f"Total seconds {time.time()-start}")
 
         report_json = os.path.join(self.args.target_dir, "report.json")
-
         reporter = Reporter(self.args)
-
         html_report = reporter.generate(report_json, self.out_reports, self.plugins)
-
-        print(f"Find the full report at {html_report}")
+        logger.info(f"Find the full report at {html_report}")
 
     def _plugin_klass(self, fqn):
         module_name, klass_name = fqn.split(":")
