@@ -25,17 +25,14 @@ import argparse
 import shlex
 import signal
 import os
-import json
 from collections import defaultdict
-import datetime
 
 from perf8 import __version__
 from perf8.plugins.base import get_registered_plugins
+from perf8.reporter import generate_report
+
 
 HERE = os.path.dirname(__file__)
-MENU_TEMPLATE = os.path.join(HERE, "templates", "menu.html.tmpl")
-INDEX_TEMPLATE = os.path.join(HERE, "templates", "index.html.tmpl")
-SUMMARY_TEMPLATE = os.path.join(HERE, "templates", "summary.html.tmpl")
 
 
 def parser():
@@ -156,7 +153,7 @@ class WatchedProcess:
         self.out_plugins = [
             plugin(self.args) for plugin in self.plugins if not plugin.in_process
         ]
-        self.reports = defaultdict(list)
+        self.out_reports = defaultdict(list)
         os.makedirs(self.args.target_dir, exist_ok=True)
         signal.signal(signal.SIGINT, self.exit)
         signal.signal(signal.SIGTERM, self.exit)
@@ -180,7 +177,7 @@ class WatchedProcess:
 
     def stop(self):
         for plugin in self.out_plugins:
-            self.reports[plugin.name].extend(plugin.stop(self.pid))
+            self.out_reports[plugin.name].extend(plugin.stop(self.pid))
 
     async def run(self):
         start = time.time()
@@ -211,77 +208,10 @@ class WatchedProcess:
         self.proc.wait()
         print(f"[perf8] Total seconds {time.time()-start}")
 
-        # read report.json to extend the list
-        with open(os.path.join(self.args.target_dir, "report.json")) as f:
-            reports = json.loads(f.read())
-
-            for report in reports["reports"]:
-                self.reports[report["name"]].append(report)
-
-        print("[perf8] Reports generated:")
-        for plugin in self.plugins:
-            if plugin.name not in self.reports:
-                continue
-            print(
-                f"[perf8] Plugin {plugin.name} generated {len(self.reports[plugin.name])} report(s)"
-            )
-
-        # generating meta remport
-        with open(MENU_TEMPLATE) as f:
-            render = f.read()
-
-        reports = []
-        artifacts = []
-
-        for reporter in self.reports.values():
-            for report in reporter:
-                relative = os.path.basename(report["file"])
-                if report["type"] == "artifact":
-                    artifacts.append(
-                        f"<li><a href='{relative}' download='{relative}' target='_blank'>{report['label']}</a></li>"
-                    )
-
-                    continue
-
-                reports.append(
-                    f"<li><a href='{relative}' target='content'>{report['label']}</a></li>"
-                )
-
-        html_report = os.path.join(self.args.target_dir, "menu.html")
-        with open(html_report, "w") as f:
-            f.write(
-                render
-                % {
-                    "reports": "\n".join(reports),
-                    "artifacts": "\n".join(artifacts),
-                    "version": __version__,
-                    "created_at": datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S"),
-                    "title": self.args.title,
-                }
-            )
-
-        with open(INDEX_TEMPLATE) as f:
-            render = f.read()
-        html_report = os.path.join(self.args.target_dir, "index.html")
-        with open(html_report, "w") as f:
-            f.write(render % {"default_page": "summary.html", "title": self.args.title})
-
-        # summary
-        plugins = [
-            f"<li>{plugin.name} -- {plugin.description}</li>" for plugin in self.plugins
-        ]
-        with open(SUMMARY_TEMPLATE) as f:
-            render = f.read()
-        summary_page = os.path.join(self.args.target_dir, "summary.html")
-        with open(summary_page, "w") as f:
-            f.write(
-                render
-                % {
-                    "command": " ".join(self.args.command),
-                    "title": self.args.title,
-                    "plugins": "\n".join(plugins),
-                }
-            )
+        report_json = os.path.join(self.args.target_dir, "report.json")
+        html_report = generate_report(
+            report_json, self.out_reports, self.plugins, self.args
+        )
 
         print(f"Find the full report at {html_report}")
 

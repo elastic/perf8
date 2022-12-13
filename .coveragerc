@@ -1,0 +1,2 @@
+[run]
+omit = perf8/__init__.py,perf8/tests/*
