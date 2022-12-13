@@ -38,6 +38,8 @@ class Reporter:
     def render(self, name, **args):
         template = self.environment.get_template(name)
         args["args"] = self.args
+        args["version"] = __version__
+        args["created_at"] = datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S")
         content = template.render(**args)
         target = os.path.join(self.args.target_dir, name)
         with open(target, "w") as f:
@@ -75,24 +77,12 @@ class Reporter:
                 else:
                     html_reports.append((relative, report["label"]))
 
-        self.render(
-            "menu.html",
-            **{
-                "reports": html_reports,
-                "artifacts": artifacts,
-                "version": __version__,
-                "created_at": datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S"),
-            },
-        )
+        self.render("menu.html", reports=html_reports, artifacts=artifacts)
 
+        # generating index page
         html_report = self.render("index.html", default_page="summary.html")
 
         # summary
-        self.render(
-            "summary.html",
-            **{
-                "command": " ".join(self.args.command),
-                "plugins": plugins,
-            },
-        )
+        self.render("summary.html", plugins=plugins)
+
         return html_report
