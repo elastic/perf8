@@ -35,7 +35,7 @@ async def test_watcher():
         cprofile = True
         memray = True
         asyncstats = False
-        pyspy = True
+        pyspy = False
         target_dir = tempfile.mkdtemp()
 
     try:
@@ -58,7 +58,7 @@ async def test_async_watcher():
         cprofile = True
         memray = True
         asyncstats = True
-        pyspy = True
+        pyspy = False
         target_dir = tempfile.mkdtemp()
 
     try:
