@@ -35,3 +35,7 @@ docker-run:
 
 docker-build:
 	docker build -t perf8 . --progress plain
+
+update-deps:
+	$(BIN)/pip install pip-licenses
+	$(BIN)/pip-licenses --format=markdown > deps-licenses.md

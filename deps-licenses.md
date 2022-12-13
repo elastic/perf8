@@ -10,12 +10,12 @@
 | flameprof          | 0.4       | MIT License                                             |
 | fonttools          | 4.38.0    | MIT License                                             |
 | gprof2dot          | 2022.7.29 | GNU Lesser General Public License v3 or later (LGPLv3+) |
-| importlib-metadata | 5.0.0     | Apache Software License                                 |
+| importlib-metadata | 5.1.0     | Apache Software License                                 |
 | kiwisolver         | 1.4.4     | BSD License                                             |
 | matplotlib         | 3.6.2     | Python Software Foundation License                      |
-| memray             | 1.4.1     | Apache Software License                                 |
+| memray             | 1.5.0     | Apache Software License                                 |
 | numpy              | 1.23.5    | BSD License                                             |
-| packaging          | 21.3      | Apache Software License; BSD License                    |
+| packaging          | 22.0      | Apache Software License; BSD License                    |
 | perf8              | 0.0.0     | Apache Software License                                 |
 | psutil             | 5.9.4     | BSD License                                             |
 | py-spy             | 0.3.14    | MIT License                                             |
@@ -23,4 +23,4 @@
 | python-dateutil    | 2.8.2     | Apache Software License; BSD License                    |
 | rich               | 12.6.0    | MIT License                                             |
 | six                | 1.16.0    | MIT License                                             |
-| zipp               | 3.10.0    | MIT License                                             |
+| zipp               | 3.11.0    | MIT License                                             |
