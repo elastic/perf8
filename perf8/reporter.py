@@ -71,21 +71,15 @@ class Reporter:
             for report in reporter:
                 relative = os.path.basename(report["file"])
                 if report["type"] == "artifact":
-                    artifacts.append(
-                        f"<li><a href='{relative}' download='{relative}' target='_blank'>{report['label']}</a></li>"
-                    )
-
-                    continue
-
-                html_reports.append(
-                    f"<li><a href='{relative}' target='content'>{report['label']}</a></li>"
-                )
+                    artifacts.append((relative, report["label"]))
+                else:
+                    html_reports.append((relative, report["label"]))
 
         self.render(
             "menu.html",
             **{
-                "reports": "\n".join(html_reports),
-                "artifacts": "\n".join(artifacts),
+                "reports": html_reports,
+                "artifacts": artifacts,
                 "version": __version__,
                 "created_at": datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S"),
             },
@@ -94,15 +88,11 @@ class Reporter:
         html_report = self.render("index.html", default_page="summary.html")
 
         # summary
-        plugins = [
-            f"<li>{plugin.name} -- {plugin.description}</li>" for plugin in plugins
-        ]
-
         self.render(
             "summary.html",
             **{
                 "command": " ".join(self.args.command),
-                "plugins": "\n".join(plugins),
+                "plugins": plugins,
             },
         )
         return html_report

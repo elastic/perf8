@@ -1,28 +1,24 @@
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-  <title>Perf8 - {{args.title}}</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://unpkg.com/chota@latest">
-</head>
-<body>
-  <div id="top" class="container" role="document">
-    <header role="banner">
-      <h1 class="pull-right" style="margin: 0;">
-      <h1>Summary</h1>
-      <div class="clearfix"></div>
-    </header>
-    <h3>
-      Script executed
-    </h3>
-    <pre>{{command}}</pre>
-    <h3>
-      Plugins used
-    </h3>
-    <ul>
-      {{plugins}}
-    </ul>
-  </div>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block body %}
+<div id="top" class="container" role="document">
+  <header role="banner">
+    <h1 class="pull-right" style="margin: 0;">
+    <h1>Summary</h1>
+    <div class="clearfix"></div>
+  </header>
+  <h3>
+    Script executed
+  </h3>
+  <pre>{{command}}</pre>
+  <h3>
+    Plugins used
+  </h3>
+  <ul>
+  {% for plugin in plugins %}
+    <li>{{plugin.name}} -- {{plugin.description}}</li>
+  {% endfor %}
+  </ul>
+</div>
+{% endblock body %}
+
