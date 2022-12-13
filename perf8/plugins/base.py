@@ -118,7 +118,7 @@ class BasePlugin:
         plt.plot(x, y, color="g", linestyle="dashed", marker="o", label=title)
 
         plt.xticks(rotation=25)
-        plt.xlabel("Duration")
+        plt.xlabel("Duration (s)")
         plt.ylabel(ylabel)
         plt.title(title, fontsize=20)
         plt.grid()
