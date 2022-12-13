@@ -23,6 +23,7 @@ import shutil
 import signal
 from sys import platform
 import base64
+import time
 
 from perf8.plugins.base import BasePlugin, register_plugin
 from perf8.logger import logger
@@ -69,6 +70,8 @@ class PySpy(BasePlugin):
             str(pid),
         ]
         self.proc = subprocess.Popen(command)
+        while self.proc.pid is None:
+            time.sleep(0.1)
 
     def stop(self, pid):
         os.kill(self.proc.pid, signal.SIGTERM)
