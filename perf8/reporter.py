@@ -21,86 +21,88 @@ import json
 import datetime
 from collections import defaultdict
 
+from jinja2 import Environment, FileSystemLoader
 from perf8 import __version__
 
 
 HERE = os.path.dirname(__file__)
-MENU_TEMPLATE = os.path.join(HERE, "templates", "menu.html.tmpl")
-INDEX_TEMPLATE = os.path.join(HERE, "templates", "index.html.tmpl")
-SUMMARY_TEMPLATE = os.path.join(HERE, "templates", "summary.html.tmpl")
 
 
-def generate_report(run_summary, out_reports, plugins, args):
-    reports = defaultdict(list)
-    reports.update(out_reports)
-
-    # read report.json to extend the list
-    with open(run_summary) as f:
-        data = json.loads(f.read())
-
-        for report in data["reports"]:
-            reports[report["name"]].append(report)
-
-    print("[perf8] Reports generated:")
-    for plugin in plugins:
-        if plugin.name not in reports:
-            continue
-        print(
-            f"[perf8] Plugin {plugin.name} generated {len(reports[plugin.name])} report(s)"
+class Reporter:
+    def __init__(self, args):
+        self.environment = Environment(
+            loader=FileSystemLoader(os.path.join(HERE, "templates"))
         )
+        self.args = args
 
-    # generating menu
-    with open(MENU_TEMPLATE) as f:
-        render = f.read()
+    def render(self, name, **args):
+        template = self.environment.get_template(name)
+        args["args"] = self.args
+        content = template.render(**args)
+        target = os.path.join(self.args.target_dir, name)
+        with open(target, "w") as f:
+            f.write(content)
+        return target
 
-    html_reports = []
-    artifacts = []
+    def generate(self, run_summary, out_reports, plugins):
+        reports = defaultdict(list)
+        reports.update(out_reports)
 
-    for reporter in reports.values():
-        for report in reporter:
-            relative = os.path.basename(report["file"])
-            if report["type"] == "artifact":
-                artifacts.append(
-                    f"<li><a href='{relative}' download='{relative}' target='_blank'>{report['label']}</a></li>"
-                )
+        # read report.json to extend the list
+        with open(run_summary) as f:
+            data = json.loads(f.read())
 
+            for report in data["reports"]:
+                reports[report["name"]].append(report)
+
+        print("[perf8] Reports generated:")
+        for plugin in plugins:
+            if plugin.name not in reports:
                 continue
-
-            html_reports.append(
-                f"<li><a href='{relative}' target='content'>{report['label']}</a></li>"
+            print(
+                f"[perf8] Plugin {plugin.name} generated {len(reports[plugin.name])} report(s)"
             )
 
-    html_report = os.path.join(args.target_dir, "menu.html")
-    with open(html_report, "w") as f:
-        f.write(
-            render
-            % {
+        # generating menu
+        html_reports = []
+        artifacts = []
+
+        for reporter in reports.values():
+            for report in reporter:
+                relative = os.path.basename(report["file"])
+                if report["type"] == "artifact":
+                    artifacts.append(
+                        f"<li><a href='{relative}' download='{relative}' target='_blank'>{report['label']}</a></li>"
+                    )
+
+                    continue
+
+                html_reports.append(
+                    f"<li><a href='{relative}' target='content'>{report['label']}</a></li>"
+                )
+
+        self.render(
+            "menu.html",
+            **{
                 "reports": "\n".join(html_reports),
                 "artifacts": "\n".join(artifacts),
                 "version": __version__,
                 "created_at": datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S"),
-                "title": args.title,
-            }
+            },
         )
 
-    with open(INDEX_TEMPLATE) as f:
-        render = f.read()
-    html_report = os.path.join(args.target_dir, "index.html")
-    with open(html_report, "w") as f:
-        f.write(render % {"default_page": "summary.html", "title": args.title})
+        html_report = self.render("index.html", default_page="summary.html")
 
-    # summary
-    plugins = [f"<li>{plugin.name} -- {plugin.description}</li>" for plugin in plugins]
-    with open(SUMMARY_TEMPLATE) as f:
-        render = f.read()
-    summary_page = os.path.join(args.target_dir, "summary.html")
-    with open(summary_page, "w") as f:
-        f.write(
-            render
-            % {
-                "command": " ".join(args.command),
-                "title": args.title,
+        # summary
+        plugins = [
+            f"<li>{plugin.name} -- {plugin.description}</li>" for plugin in plugins
+        ]
+
+        self.render(
+            "summary.html",
+            **{
+                "command": " ".join(self.args.command),
                 "plugins": "\n".join(plugins),
-            }
+            },
         )
-    return html_report
+        return html_report

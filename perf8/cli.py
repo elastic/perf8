@@ -29,7 +29,7 @@ from collections import defaultdict
 
 from perf8 import __version__
 from perf8.plugins.base import get_registered_plugins
-from perf8.reporter import generate_report
+from perf8.reporter import Reporter
 
 
 HERE = os.path.dirname(__file__)
@@ -209,9 +209,10 @@ class WatchedProcess:
         print(f"[perf8] Total seconds {time.time()-start}")
 
         report_json = os.path.join(self.args.target_dir, "report.json")
-        html_report = generate_report(
-            report_json, self.out_reports, self.plugins, self.args
-        )
+
+        reporter = Reporter(self.args)
+
+        html_report = reporter.generate(report_json, self.out_reports, self.plugins)
 
         print(f"Find the full report at {html_report}")
 

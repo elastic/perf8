@@ -2,7 +2,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=Edge">
-  <title>Perf8 - %(title)s</title>
+  <title>Perf8 - {{ args.title }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="https://unpkg.com/chota@latest">
 </head>
@@ -10,18 +10,22 @@
   <div id="top" class="container" role="document">
     <header role="banner">
       <h1 class="pull-right" style="margin: 0;">
-      <h1>Summary</h1>
+      <h1>Perf8</h1>
       <div class="clearfix"></div>
+      <p><small><i>
+          v{{version}}. Created at {{created_at}}.
+       </i></small></p>
     </header>
-    <h3>
-      Script executed 
-    </h3>
-    <pre>%(command)s</pre>
-    <h3>
-      Plugins used
-    </h3>
+
+    <a href="summary.html" target='content'>Summary</a>
+
+    <h2>Reports</h2>
     <ul>
-      %(plugins)s
+      {{reports}}
+    </ul>
+    <h2>Artifacts</h2>
+    <ul>
+      {{artifacts}}
     </ul>
   </div>
 </body>
