@@ -25,6 +25,6 @@ jobs:
       - name: Install tox
         run: pip install tox tox-gh-actions
       - name: Install dot
-        run: apt-get install graphviz -y
+        run: sudo apt-get install graphviz -y
       - name: Test with tox
         run: tox
