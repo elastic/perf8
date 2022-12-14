@@ -20,7 +20,9 @@ import csv
 import time
 import os
 import psutil
+
 from perf8.plugins.base import BasePlugin, register_plugin
+from perf8.logger import logger
 
 
 class ResourceWatcher(BasePlugin):
@@ -54,7 +56,12 @@ class ResourceWatcher(BasePlugin):
         self.writer.writerow(self.rows)
 
     async def probe(self, pid):
-        info = self.proc_info.as_dict()
+        try:
+            info = self.proc_info.as_dict()
+        except Exception as e:
+            logger.warning(f"Could not get info {e}")
+            return
+
         probed_at = time.time()
         metrics = (
             info["memory_info"].rss,
