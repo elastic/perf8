@@ -30,11 +30,13 @@ def test_main():
 
     args = [
         "perf8",
-        "--all",
+        "--cprofile",
+        "--psutil",
+        "--asyncstats",
         "-t",
         target_dir,
         "-c",
-        os.path.join(os.path.dirname(__file__), "demo.py"),
+        os.path.join(os.path.dirname(__file__), "ademo.py"),
     ]
 
     old_sys = sys.argv
