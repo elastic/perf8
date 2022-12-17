@@ -61,18 +61,12 @@ to detect if `perf8` is calling your app:
    import os
 
    if 'PERF8' in os.environ:
-
        import perf8
 
-       async def my_app():
-           await perf8.enable(my_loop)
-           try:
-               # my code
-               await run_app()
-            finally:
-                await perf8.disable()
+       async with perf8.measure():
+           await run_app()
     else:
-        my_app = run_app
+        await run_app()
 
 
 Screencast

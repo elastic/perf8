@@ -20,6 +20,8 @@ import importlib
 import asyncio
 import csv
 import os
+import contextlib
+
 import matplotlib.pyplot as plt
 
 
@@ -55,6 +57,15 @@ async def disable():
     for plugin in _ASYNC_PLUGINS_INSTANCES:
         await plugin.disable()
     _ASYNC_PLUGINS_INSTANCES[:] = []
+
+
+@contextlib.asynccontextmanager
+async def measure(loop=None):
+    await enable(loop)
+    try:
+        yield
+    finally:
+        await disable()
 
 
 _PLUGIN_CLASSES = []

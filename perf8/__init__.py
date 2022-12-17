@@ -20,6 +20,6 @@ __version__ = "0.0.0"
 
 
 try:
-    from perf8.plugins.base import enable, disable  # NOQA
+    from perf8.plugins.base import enable, disable, measure  # NOQA
 except Exception:
     pass
