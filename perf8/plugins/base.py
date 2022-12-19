@@ -23,6 +23,7 @@ import os
 import contextlib
 
 import matplotlib.pyplot as plt
+from perf8.logger import logger
 
 
 _ASYNC_PLUGINS_INSTANCES = []
@@ -47,10 +48,16 @@ async def enable(loop=None):
     if loop is None:
         loop = asyncio.get_event_loop()
 
-    for name in os.environ["PERF8_ASYNC_PLUGIN"].split(","):
+    for name in os.environ.get("PERF8_ASYNC_PLUGIN", "").split(","):
+        name = name.strip()
+        if name == "":
+            continue
         plugin = _PLUGINS_INSTANCES[name]
         await plugin.enable(loop)
         _ASYNC_PLUGINS_INSTANCES.append(plugin)
+
+    if len(_ASYNC_PLUGINS_INSTANCES) == 0:
+        logger.warning("No perf8 async plugin was activated")
 
 
 async def disable():
