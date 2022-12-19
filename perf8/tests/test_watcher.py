@@ -33,7 +33,7 @@ async def test_watcher():
         refresh_rate = 0.1
         psutil = True
         cprofile = True
-        memray = True
+        memray = False
         asyncstats = False
         pyspy = False
         target_dir = tempfile.mkdtemp()
@@ -55,7 +55,7 @@ async def test_async_watcher():
         command = os.path.join(os.path.dirname(__file__), "ademo.py")
         refresh_rate = 0.1
         psutil = True
-        cprofile = True
+        cprofile = False
         memray = True
         asyncstats = True
         pyspy = False

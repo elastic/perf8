@@ -120,15 +120,15 @@ def main(args=None):
         print(__version__)
         sys.exit(0)
 
-    if args.memray and args.cprofile:
-        raise Exception("You can't use --memray and --cprofile at the same time")
-
     if args.all:
         for plugin in get_registered_plugins():
             if plugin.name == "cprofile":
                 args.cprofile = False
             else:
                 setattr(args, plugin.name.replace("-", "_"), True)
+
+    if args.memray and args.cprofile:
+        raise Exception("You can't use --memray and --cprofile at the same time")
 
     if args.verbose > 0:
         set_logger(logging.DEBUG)

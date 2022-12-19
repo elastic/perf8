@@ -113,11 +113,13 @@ class BasePlugin:
         if not self.enabled:
             return
         self._disable()
+        self.enabled = False
 
     def enable(self):
         if self.enabled:
             return
         self._enable()
+        self.enabled = True
 
     def _enable(self):
         raise NotImplementedError

@@ -52,14 +52,24 @@ class WatchedProcess:
         os.makedirs(self.args.target_dir, exist_ok=True)
         signal.signal(signal.SIGINT, self.exit)
         signal.signal(signal.SIGTERM, self.exit)
+        signal.signal(signal.SIGUSR1, self.runner_exit)
+        self.started = False
 
     def exit(self, signum, frame):
         logger.info(f"We got a {signum} signal, passing it along")
         os.kill(self.proc.pid, signum)
 
+    def runner_exit(self, signum, frame):
+        logger.info(f"We got a {signum} signal, the app finished execution")
+        logger.info("The app wrapper is now building in-process reports")
+        # we can stop out of process plugins
+        self.stop()
+
     async def _probe(self):
-        while self.proc.poll() is None:
+        while self.started:
             for plugin in self.out_plugins:
+                if not plugin.enabled:
+                    continue
                 await plugin.probe(self.pid)
             if self.proc.poll() is not None:
                 break
@@ -67,18 +77,32 @@ class WatchedProcess:
 
     def start(self):
         logger.info(f"[perf8] Plugins: {', '.join([p.name for p in self.plugins])}")
+        self.started = True
         for plugin in self.out_plugins:
             plugin.start(self.pid)
 
     def stop(self):
-        for plugin in self.out_plugins:
-            self.out_reports[plugin.name].extend(plugin.stop(self.pid))
+        if not self.started:
+            return
+        try:
+            for plugin in self.out_plugins:
+                self.out_reports[plugin.name].extend(plugin.stop(self.pid))
+        finally:
+            self.started = False
 
     async def run(self):
         plugins = [plugin.fqn for plugin in self.plugins if plugin.in_process]
 
         # XXX pass-through perf8 args so the plugins can pick there options
-        cmd = [sys.executable, "-m", "perf8.runner", "-t", self.args.target_dir]
+        cmd = [
+            sys.executable,
+            "-m",
+            "perf8.runner",
+            "-t",
+            self.args.target_dir,
+            "--ppid",
+            str(os.getpid()),
+        ]
 
         if len(plugins) > 0:
             cmd.extend(["--plugins", ",".join(plugins)])

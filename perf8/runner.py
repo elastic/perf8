@@ -53,7 +53,11 @@ def main():
         type=str,
         help="target dir for results",
     )
-
+    parser.add_argument(
+        "--ppid",
+        type=int,
+        help="Parent process id",
+    )
     parser.add_argument(
         "--plugins",
         type=str,
@@ -79,6 +83,7 @@ def main():
     # XXX pass-through perf8 args so the plugins can pick there options
     args = parser.parse_args()
     args.target_dir = os.path.abspath(args.target_dir)
+    os.makedirs(args.target_dir, exist_ok=True)
 
     plugins = [
         get_plugin_klass(fqn)(args)
@@ -122,6 +127,9 @@ def main():
     try:
         run_script(script, script_args)
     finally:
+        # script is over, send a signal to the parent
+        os.kill(args.ppid, signal.SIGUSR1)
+
         for plugin in reversed(plugins):
             if not plugin.is_async and plugin.in_process:
                 plugin.disable()
