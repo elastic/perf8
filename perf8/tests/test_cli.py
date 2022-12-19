@@ -26,13 +26,15 @@ from perf8.cli import main
 
 def test_main():
     target_dir = tempfile.mkdtemp()
-    os.environ["RANGE"] = "100"
+    os.environ["RANGE"] = "1000"
 
     args = [
         "perf8",
         "--cprofile",
         "--psutil",
         "--asyncstats",
+        "--verbose",
+        "--refresh-rate=0.1",
         "-t",
         target_dir,
         "-c",

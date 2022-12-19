@@ -68,8 +68,8 @@ def parser():
     )
     aparser.add_argument(
         "--refresh-rate",
-        type=int,
-        default=5,
+        type=float,
+        default=5.0,
         help="Refresh rate",
     )
     aparser.add_argument(

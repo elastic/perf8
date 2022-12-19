@@ -26,7 +26,7 @@ from perf8.watcher import WatchedProcess
 
 @pytest.mark.asyncio
 async def test_watcher():
-    os.environ["RANGE"] = "100"
+    os.environ["RANGE"] = "1000"
 
     class Args:
         command = os.path.join(os.path.dirname(__file__), "demo.py")
@@ -37,6 +37,7 @@ async def test_watcher():
         asyncstats = False
         pyspy = False
         target_dir = tempfile.mkdtemp()
+        verbose = 2
 
     try:
         watcher = WatchedProcess(Args())
@@ -49,7 +50,7 @@ async def test_watcher():
 
 @pytest.mark.asyncio
 async def test_async_watcher():
-    os.environ["RANGE"] = "100"
+    os.environ["RANGE"] = "1000"
 
     class Args:
         command = os.path.join(os.path.dirname(__file__), "ademo.py")
@@ -60,6 +61,7 @@ async def test_async_watcher():
         asyncstats = True
         pyspy = False
         target_dir = tempfile.mkdtemp()
+        verbose = 2
 
     try:
         watcher = WatchedProcess(Args())

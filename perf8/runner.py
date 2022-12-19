@@ -28,8 +28,9 @@ from copy import copy
 import runpy
 import pathlib
 import signal
+import logging
 
-from perf8.logger import logger
+from perf8.logger import logger, set_logger
 from perf8.plugins.base import get_plugin_klass, set_plugins
 
 
@@ -65,6 +66,16 @@ def main():
         help="Plugins to use",
     )
     parser.add_argument(
+        "-v",
+        "--verbose",
+        action="count",
+        default=0,
+        help=(
+            "Verbosity level. -v will display "
+            "tracebacks. -vv requests and responses."
+        ),
+    )
+    parser.add_argument(
         "-r",
         "--report",
         default="report.json",
@@ -82,6 +93,12 @@ def main():
 
     # XXX pass-through perf8 args so the plugins can pick there options
     args = parser.parse_args()
+
+    if args.verbose > 0:
+        set_logger(logging.DEBUG)
+    else:
+        set_logger(logging.INFO)
+
     args.target_dir = os.path.abspath(args.target_dir)
     os.makedirs(args.target_dir, exist_ok=True)
 
@@ -127,6 +144,7 @@ def main():
     try:
         run_script(script, script_args)
     finally:
+        logger.info(f"Script is over -- sending a signal to {args.ppid}")
         # script is over, send a signal to the parent
         os.kill(args.ppid, signal.SIGUSR1)
 

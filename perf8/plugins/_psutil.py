@@ -22,7 +22,6 @@ import os
 import psutil
 
 from perf8.plugins.base import BasePlugin, register_plugin
-from perf8.logger import logger
 
 
 class ResourceWatcher(BasePlugin):
@@ -37,6 +36,7 @@ class ResourceWatcher(BasePlugin):
         self.report_file = os.path.join(args.target_dir, "report.csv")
 
     def start(self, pid):
+        self.enabled = True
         self.proc_info = psutil.Process(pid)
         self.report_fd = open(self.report_file, "w")
         self.writer = csv.writer(self.report_fd)
@@ -59,9 +59,10 @@ class ResourceWatcher(BasePlugin):
         try:
             info = self.proc_info.as_dict()
         except Exception as e:
-            logger.warning(f"Could not get info {e}")
+            self.warning(f"Could not get info {e}")
             return
 
+        self.debug("Probing")
         probed_at = time.time()
         metrics = (
             info["memory_info"].rss,
@@ -79,7 +80,10 @@ class ResourceWatcher(BasePlugin):
         self.report_fd.flush()
 
     def stop(self, pid):
+        self.enabled = False
+
         if self.report_fd is None:
+            self.warning("No data collected for psutil")
             return []
 
         self.report_fd.close()

@@ -109,6 +109,15 @@ class BasePlugin:
     def fqn(cls):
         return f"{cls.__module__}:{cls.__qualname__}"
 
+    def debug(self, msg):
+        logger.debug(f"[{os.getpid()}][{self.name}] {msg}")
+
+    def info(self, msg):
+        logger.info(f"[{os.getpid()}][{self.name}] {msg}")
+
+    def warning(self, msg):
+        logger.warning(f"[{os.getpid()}][{self.name}] {msg}")
+
     def disable(self):
         if not self.enabled:
             return
@@ -145,6 +154,8 @@ class BasePlugin:
                 x.append(row[-1])
                 y.append(extract_field(row))
 
+        self.info(f"Loaded {len(x)} data points from {path}")
+
         plt.cla()
         plt.plot(x, y, color="g", linestyle="dashed", marker="o", label=title)
 
@@ -155,6 +166,7 @@ class BasePlugin:
         plt.grid()
         plt.legend()
         plot_file = os.path.join(self.target_dir, target)
+        self.info(f"Saved plot file at {plot_file}")
         plt.savefig(plot_file)
         return plot_file
 
