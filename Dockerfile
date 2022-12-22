@@ -19,5 +19,6 @@ RUN pip3 install -r requirements.txt && \
 	pip3 install -r tests-requirements.txt && \
 	pip3 install .
 
+ENV RANGE=5000
 
-CMD perf8 --memray --pyspy --psutil -t /app/perf8-report -c "/app/perf8/tests/demo.py"
+CMD perf8 -v --memray --pyspy --psutil --asyncstats -t /app/perf8-report -c "/app/perf8/tests/ademo.py"

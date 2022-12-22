@@ -26,7 +26,6 @@ import base64
 import time
 
 from perf8.plugins.base import BasePlugin, register_plugin
-from perf8.logger import logger
 
 
 PYSPY = "py-spy"
@@ -53,14 +52,32 @@ class PySpy(BasePlugin):
 
         # could be in the plugin metadata
         if not self.supported:
-            logger.info(f"pyspy support on {platform} is not great")
+            self.info(f"pyspy support on {platform} is not great")
         self.profile_file = os.path.join(self.target_dir, "speedscope.json")
         self.proc = None
 
+    def check_pid(self, pid):
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        return True
+
     def start(self, pid):
+        running = self.check_pid(pid)
+        start = time.time()
+        while not running and time.time() - start < 120:
+            self.warning(f"Process {pid} not running...")
+            time.sleep(1.)
+
+        if not running:
+            raise OSError(f"Process {pid} not running...")
+
         command = [
             self.pyspy,
             "record",
+            "-r", "200",
+            "--nonblocking",
             "-s",
             "--format",
             "speedscope",
@@ -69,18 +86,42 @@ class PySpy(BasePlugin):
             "--pid",
             str(pid),
         ]
+        self.debug(f"Running {command}")
+
         self.proc = subprocess.Popen(command)
         while self.proc.pid is None:
             time.sleep(0.1)
 
+        code = self.proc.poll()
+        if code is not None:
+            self.warning(f"pyspy exited immediatly with code {code}")
+
     def stop(self, pid):
-        os.kill(self.proc.pid, signal.SIGTERM)
+        self.debug("Pyspy should stop by itself...")
+        running = self.check_pid(pid)
+        start = time.time()
+        while running and time.time() - start < 120:
+            self.warning(f"Process {pid} still running. Waiting...")
+            time.sleep(1.)
+
+        if self.proc.poll() is None:
+            self.debug("Stopping Py-spy")
+            self.proc.terminate()
+            try:
+                returncode = self.proc.wait(timeout=120)
+                self.debug(f"return code is {returncode}")
+            except subprocess.TimeoutExpired:
+                self.proc.kill()
 
         # copy over the speedscope dir
         speedscope_copy = os.path.join(self.target_dir, "speedscope")
         if os.path.exists(speedscope_copy):
             shutil.rmtree(speedscope_copy)
         shutil.copytree(SPEEDSCOPE_APP, speedscope_copy)
+
+        if not os.path.exists(self.profile_file):
+            self.warning(f"Fail to find pyspy result at {self.profile_file}")
+            return []
 
         # create the js script that contains the base64-ed results
         with open(self.profile_file, "rb") as f:

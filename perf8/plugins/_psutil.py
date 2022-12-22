@@ -76,8 +76,11 @@ class ResourceWatcher(BasePlugin):
             int(probed_at - self.started_at),
         )
 
-        self.writer.writerow(metrics)
-        self.report_fd.flush()
+        try:
+            self.writer.writerow(metrics)
+            self.report_fd.flush()
+        except ValueError:
+            self.warning(f"Failed to write in {self.report_file}")
 
     def stop(self, pid):
         self.enabled = False
