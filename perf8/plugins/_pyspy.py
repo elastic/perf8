@@ -16,7 +16,6 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import os
 import sys
 import subprocess
 import shutil
@@ -68,7 +67,7 @@ class PySpy(BasePlugin):
         start = time.time()
         while not running and time.time() - start < 120:
             self.warning(f"Process {pid} not running...")
-            time.sleep(1.)
+            time.sleep(1.0)
 
         if not running:
             raise OSError(f"Process {pid} not running...")
@@ -76,7 +75,6 @@ class PySpy(BasePlugin):
         command = [
             self.pyspy,
             "record",
-            "-r", "200",
             "--nonblocking",
             "-s",
             "--format",
@@ -102,7 +100,7 @@ class PySpy(BasePlugin):
         start = time.time()
         while running and time.time() - start < 120:
             self.warning(f"Process {pid} still running. Waiting...")
-            time.sleep(1.)
+            time.sleep(1.0)
 
         if self.proc.poll() is None:
             self.debug("Stopping Py-spy")
