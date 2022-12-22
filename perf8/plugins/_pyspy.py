@@ -16,10 +16,10 @@
 # specific language governing permissions and limitations
 # under the License.
 #
+import os
 import sys
 import subprocess
 import shutil
-import signal
 from sys import platform
 import base64
 import time
