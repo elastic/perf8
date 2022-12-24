@@ -19,11 +19,28 @@ The project is pluggable, and ships with a few tools:
 - psutil - a psutil integration
 - asyncstats - stats on the asyncio eventloop usage (for async apps)
 
+Installation
+------------
+
+No release was done on PyPI yet, you can just run:
+
+.. code-block:: sh
+
+   pip install git+https://github.com/elastic/perf8#egg=perf8
+
+If you use the `cprofile` plugin, you will need to install `Graphviz` to
+get the `dot` utility. See. https://graphviz.org/download/
+
+
+
+Usage
+-----
+
 Running the `perf8` command against your Python module:
 
 .. code-block:: sh
 
-   perf8 --all /my/python/script.py
+   perf8 --all -c /my/python/script.py --option1
 
 Will generate a self-contained HTML report, making it suitable for
 running it in automation and produce performance artifacts.
@@ -36,7 +53,7 @@ Async applications
 
 Running the `asyncstats` plugin requires to provide your application event loop.
 
-In order to do this, you need to instrumente your application to give `perf8`
+In order to do this, you need to instrument your application to give `perf8`
 the loop to watch. You can use the `enable` and `disable` coroutines:
 
 .. code-block:: python
