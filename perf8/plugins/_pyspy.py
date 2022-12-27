@@ -92,7 +92,7 @@ class PySpy(BasePlugin):
 
         code = self.proc.poll()
         if code is not None:
-            self.warning(f"pyspy exited immediatly with code {code}")
+            self.warning(f"pyspy exited immediately with code {code}")
 
     def stop(self, pid):
         self.debug("Pyspy should stop by itself...")
