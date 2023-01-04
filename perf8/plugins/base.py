@@ -104,6 +104,13 @@ class BasePlugin:
         self.target_dir = args.target_dir
         self.enabled = False
 
+    def check_pid(self, pid):
+        try:
+            os.kill(pid, 0)
+        except OSError:
+            return False
+        return True
+
     @classmethod
     @property
     def fqn(cls):

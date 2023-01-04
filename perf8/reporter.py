@@ -20,6 +20,8 @@ import os
 import json
 import datetime
 from collections import defaultdict
+import base64
+import mimetypes
 
 from jinja2 import Environment, FileSystemLoader
 from perf8 import __version__
@@ -66,22 +68,45 @@ class Reporter:
                 f"Plugin {plugin.name} generated {len(reports[plugin.name])} report(s)"
             )
 
-        # generating menu
-        html_reports = []
-        artifacts = []
-
-        for reporter in reports.values():
-            for report in reporter:
-                relative = os.path.basename(report["file"])
-                if report["type"] == "artifact":
-                    artifacts.append((relative, report["label"]))
-                else:
-                    html_reports.append((relative, report["label"]))
-
-        self.render("menu.html", reports=html_reports, artifacts=artifacts)
-
         # generating index page
-        html_report = self.render("index.html", default_page="summary.html")
+        all_reports = []
+        num = 0
+        for item in reports.values():
+            for report in item:
+                report["num"] = num
+                report["id"] = f"report-{num}"
+                num += 1
+                if report["type"] == "html":
+                    with open(report["file"]) as f:
+                        report["html"] = html = f.read()
+                        report["html_b64"] = base64.b64encode(
+                            html.encode("utf8")
+                        ).decode("utf-8")
+                elif report["type"] == "image":
+                    with open(report["file"], "rb") as f:
+                        data = base64.b64encode(f.read()).decode("utf-8")
+                        report["image"] = data
+                        report["mimetype"] = mimetypes.guess_type(report["file"])[0]
+
+                all_reports.append(report)
+
+        def _s(report):
+            if report["type"] == "artifact":
+                suffix = "2"
+            elif report["type"] == "image":
+                suffix = "1"
+            else:
+                suffix = "0"
+
+            return int(f'{suffix}{report["num"]}')
+
+        all_reports.sort(key=_s)
+        html_report = self.render(
+            "index.html",
+            default_page="summary.html",
+            reports=all_reports,
+            plugins=plugins,
+        )
 
         # summary
         self.render("summary.html", plugins=plugins)

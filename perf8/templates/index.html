@@ -1,8 +1,72 @@
 {% extends "base.html" %}
 
 {% block content %}
-<frameset cols="20%%,80%%">
-  <frame src="menu.html" name="menu"/>
-  <frame src="{{ default_page }}" name="content"/>
-</frameset>
+
+
+<nav class="nav">
+  <div class="nav-left">
+    <a class="brand" href="#">⚡️Perf8⚡️</a>
+    <div class="tabs">
+    <a class="active" id="tab-summary" onclick="openTab('summary')">Summary</a>
+    {% for report in reports %}
+    {% if report['type'] == 'artifact' %}
+    <a id="tab-{{report['id']}}" href="{{report['file']}}">{{report['label']}} 🔗</a>
+    {% else %}
+    <a id="tab-{{report['id']}}" onclick='openTab("{{report['id']}}")'>{{report['label']}}</a>
+    {% endif %}
+    {% endfor %}
+    </div>
+  </div>
+</nav>
+
+<script>
+function openTab(tabName) {
+  var i;
+  var x = document.getElementsByClassName("container");
+  for (i = 0; i < x.length; i++) {
+    x[i].style.display = "none";
+  }
+  document.getElementById(tabName).style.display = "block";
+  document.getElementById('tab-'+tabName).class = 'active';
+}
+</script>
+
+
+<div id="summary" class="container" role="document">
+  <header role="banner">
+    <h1 class="pull-right" style="margin: 0;">
+    <h1>Summary</h1>
+    <div class="clearfix"></div>
+  </header>
+  <h3>
+    Script executed
+  </h3>
+  <pre>{{" ".join(args.command)}}</pre>
+  <h3>
+    Plugins used
+  </h3>
+  <ul>
+  {% for plugin in plugins %}
+    <li>{{plugin.name}} -- {{plugin.description}}</li>
+  {% endfor %}
+  </ul>
+</div>
+
+{% for report in reports %}
+
+{% if report['type'] == 'image' %}
+<div id="{{report['id']}}" class="container" role="document" style="display:none">
+    <img src="data:{{report['mimetype']}};base64,{{report['image']}}">
+</div>
+{% endif %}
+
+{% if report['type'] == 'html' %}
+<div id="{{report['id']}}" class="container" role="document" style="display:none">
+    <iframe src="data:text/html;base64,{{report['html_b64']}}" width="100%" height="100%"></iframe>
+</div>
+{% endif %}
+
+{% endfor %}
+
+
 {% endblock content %}
