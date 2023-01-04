@@ -7,12 +7,12 @@
   <div class="nav-left">
     <a class="brand" href="#">⚡️Perf8⚡️</a>
     <div class="tabs">
-    <a class="active" id="tab-summary" onclick="openTab('summary')">Summary</a>
+    <a class="active tab" id="tab-summary" onclick="openTab('summary')">Summary</a>
     {% for report in reports %}
     {% if report['type'] == 'artifact' %}
-    <a id="tab-{{report['id']}}" href="{{report['file']}}">{{report['label']}} 🔗</a>
+    <a class="tab" id="tab-{{report['id']}}" href="{{report['file']}}">{{report['label']}} 🔗</a>
     {% else %}
-    <a id="tab-{{report['id']}}" onclick='openTab("{{report['id']}}")'>{{report['label']}}</a>
+    <a class="tab" id="tab-{{report['id']}}" onclick='openTab("{{report['id']}}")'>{{report['label']}}</a>
     {% endif %}
     {% endfor %}
     </div>
@@ -27,7 +27,12 @@ function openTab(tabName) {
     x[i].style.display = "none";
   }
   document.getElementById(tabName).style.display = "block";
-  document.getElementById('tab-'+tabName).class = 'active';
+  var x = document.getElementsByClassName("active tab");
+  for (i = 0; i < x.length; i++) {
+    x[i].className = "tab";
+  }
+
+  document.getElementById('tab-'+tabName).className = 'active tab';
 }
 </script>
 

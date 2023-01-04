@@ -103,12 +103,8 @@ class Reporter:
         all_reports.sort(key=_s)
         html_report = self.render(
             "index.html",
-            default_page="summary.html",
             reports=all_reports,
             plugins=plugins,
         )
-
-        # summary
-        self.render("summary.html", plugins=plugins)
 
         return html_report
