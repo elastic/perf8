@@ -22,6 +22,9 @@ import datetime
 from collections import defaultdict
 import base64
 import mimetypes
+import platform
+import psutil
+import humanize
 
 from jinja2 import Environment, FileSystemLoader
 from perf8 import __version__
@@ -30,6 +33,21 @@ from perf8.logger import logger
 
 HERE = os.path.dirname(__file__)
 
+# cgroup v1 file
+docker_memlimit = "/sys/fs/cgroup/memory/memory.limit_in_bytes"
+
+# cgroup v2 file
+docker_memlimit_v2 = "/sys/fs/cgroup/memory.max"
+
+if os.path.exists(docker_memlimit):
+    with open(docker_memlimit) as f:
+        system_memory = int(f.read().strip())
+elif os.path.exists(docker_memlimit_v2):
+    with open(docker_memlimit_v2) as f:
+        system_memory = int(f.read().strip())
+else:
+    system_memory = psutil.virtual_memory().total
+
 
 class Reporter:
     def __init__(self, args):
@@ -37,6 +55,21 @@ class Reporter:
             loader=FileSystemLoader(os.path.join(HERE, "templates"))
         )
         self.args = args
+
+    def get_system_info(self):
+        cores = psutil.cpu_count()
+        freq = sum([freq.current for freq in psutil.cpu_freq(percpu=True)]) / cores
+
+        return {
+            "OS Name": platform.system(),
+            "Architecture": platform.architecture()[0],
+            "Machine Type": platform.uname().machine,
+            "Network Name": platform.uname().node,
+            "Python Version": platform.python_version(),
+            "Physical Memory": humanize.naturalsize(system_memory, binary=True),
+            "Number of Cores": cores,
+            "CPU Frequency": freq,
+        }
 
     def render(self, name, **args):
         template = self.environment.get_template(name)
@@ -105,6 +138,7 @@ class Reporter:
             "index.html",
             reports=all_reports,
             plugins=plugins,
+            system_info=self.get_system_info(),
         )
 
         return html_report

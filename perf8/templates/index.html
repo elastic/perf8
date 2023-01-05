@@ -53,6 +53,16 @@ function openTab(tabName) {
     <h1>Summary</h1>
     <div class="clearfix"></div>
   </header>
+
+  <h3>
+    System info
+  </h3>
+  <ul>
+    {% for info, value in system_info.items() %}
+    <li><span class="text-grey">{{info}}</span> → {{value}}</li>
+    {% endfor %}
+  </ul>
+
   <h3>
     Script executed
   </h3>
@@ -62,7 +72,7 @@ function openTab(tabName) {
   </h3>
   <ul>
   {% for plugin in plugins %}
-    <li>{{plugin.name}} -- {{plugin.description}}</li>
+  <li><span class="text-grey">{{plugin.name}}</span> → {{plugin.description}}</li>
   {% endfor %}
   </ul>
 

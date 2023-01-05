@@ -10,6 +10,7 @@
 | flameprof          | 0.4       | MIT License                                             |
 | fonttools          | 4.38.0    | MIT License                                             |
 | gprof2dot          | 2022.7.29 | GNU Lesser General Public License v3 or later (LGPLv3+) |
+| humanize           | 4.4.0     | MIT License                                             |
 | importlib-metadata | 5.1.0     | Apache Software License                                 |
 | kiwisolver         | 1.4.4     | BSD License                                             |
 | matplotlib         | 3.6.2     | Python Software Foundation License                      |
