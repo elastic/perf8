@@ -57,9 +57,6 @@ class Reporter:
         self.args = args
 
     def get_system_info(self):
-        cores = psutil.cpu_count()
-        freq = sum([freq.current for freq in psutil.cpu_freq(percpu=True)]) / cores
-
         return {
             "OS Name": platform.system(),
             "Architecture": platform.architecture()[0],
@@ -67,8 +64,8 @@ class Reporter:
             "Network Name": platform.uname().node,
             "Python Version": platform.python_version(),
             "Physical Memory": humanize.naturalsize(system_memory, binary=True),
-            "Number of Cores": cores,
-            "CPU Frequency": freq,
+            "Number of Cores": psutil.cpu_count(),
+            "CPU Frequency": f"{psutil.cpu_freq(percpu=False).current} Hz",
         }
 
     def render(self, name, **args):
