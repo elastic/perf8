@@ -1,17 +1,24 @@
 {% extends "base.html" %}
 
-{% block content %}
+{% block body %}
+
+<style>
+#brand {
+  transition: transform .7s ease-in-out;
+}
+#brand:hover {
+  transform: rotate(360deg);
+}
+</style>
 
 
 <nav class="nav">
   <div class="nav-left">
-    <a class="brand" href="#">⚡️Perf8⚡️</a>
+    <a id="brand" class="brand" href="#">⚡️Perf8⚡️</a>
     <div class="tabs">
     <a class="active tab" id="tab-summary" onclick="openTab('summary')">Summary</a>
     {% for report in reports %}
-    {% if report['type'] == 'artifact' %}
-    <a class="tab" id="tab-{{report['id']}}" href="{{report['file']}}">{{report['label']}} 🔗</a>
-    {% else %}
+    {% if report['type'] != 'artifact' %}
     <a class="tab" id="tab-{{report['id']}}" onclick='openTab("{{report['id']}}")'>{{report['label']}}</a>
     {% endif %}
     {% endfor %}
@@ -26,7 +33,10 @@ function openTab(tabName) {
   for (i = 0; i < x.length; i++) {
     x[i].style.display = "none";
   }
+
   document.getElementById(tabName).style.display = "block";
+  document.getElementById(tabName).style.height = "100%";
+
   var x = document.getElementsByClassName("active tab");
   for (i = 0; i < x.length; i++) {
     x[i].className = "tab";
@@ -55,6 +65,20 @@ function openTab(tabName) {
     <li>{{plugin.name}} -- {{plugin.description}}</li>
   {% endfor %}
   </ul>
+
+  <h3>
+    Artifacts
+  </h3>
+  <ul>
+  {% for report in reports %}
+  {% if report['type'] == 'artifact' %}
+    <li>
+    <a href="{{report['file']}}">{{report['label']}} 🔗</a>
+    </li>
+  {% endif %}
+  {% endfor %}
+  </ul>
+
 </div>
 
 {% for report in reports %}
@@ -74,4 +98,4 @@ function openTab(tabName) {
 {% endfor %}
 
 
-{% endblock content %}
+{% endblock body %}
