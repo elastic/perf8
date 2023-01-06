@@ -26,6 +26,8 @@ import signal
 import os
 from collections import defaultdict
 
+import humanize
+
 from perf8.plugins.base import get_registered_plugins
 from perf8.reporter import Reporter
 from perf8.logger import logger
@@ -123,14 +125,16 @@ class WatchedProcess:
             self.start()
 
             await self._probe()
-            logger.info(f"Command execution time {time.time()-start:.2f} seconds.")
+            execution_time = time.time() - start
+            logger.info(f"Command execution time {execution_time:.2f} seconds.")
         finally:
             self.stop()
 
         self.proc.wait()
 
+        execution_info = {"duration": humanize.precisedelta(execution_time)}
         report_json = os.path.join(self.args.target_dir, "report.json")
-        reporter = Reporter(self.args)
+        reporter = Reporter(self.args, execution_info)
         html_report = reporter.generate(report_json, self.out_reports, self.plugins)
         logger.info(f"Find the full report at {html_report}")
 

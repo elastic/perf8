@@ -64,9 +64,11 @@ function openTab(tabName) {
   </ul>
 
   <h3>
-    Script executed
+    Command executed
   </h3>
-  <pre>{{" ".join(args.command)}}</pre>
+  <pre>$ python {{" ".join(args.command)}}</pre>
+  <div>It took {{execution_info['duration']}} to run. ⚠️  This duration may be impacted by plugins that run within the application</div>
+
   <h3>
     Plugins used
   </h3>
@@ -82,9 +84,9 @@ function openTab(tabName) {
   <ul>
   {% for report in reports %}
   {% if report['type'] == 'artifact' %}
-    <li>
-    <a href="{{report['file']}}">{{report['label']}} 🔗</a>
-    </li>
+  <li>
+    <a href="{{report['file']}}">{{report['label']}} 🔗 {{report['file_size']}}</a>
+  </li>
   {% endif %}
   {% endfor %}
   </ul>

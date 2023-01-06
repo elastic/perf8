@@ -50,11 +50,12 @@ else:
 
 
 class Reporter:
-    def __init__(self, args):
+    def __init__(self, args, execution_info):
         self.environment = Environment(
             loader=FileSystemLoader(os.path.join(HERE, "templates"))
         )
         self.args = args
+        self.execution_info = execution_info
 
     def get_system_info(self):
         return {
@@ -117,7 +118,10 @@ class Reporter:
                         data = base64.b64encode(f.read()).decode("utf-8")
                         report["image"] = data
                         report["mimetype"] = mimetypes.guess_type(report["file"])[0]
-
+                elif report["type"] == "artifact":
+                    report["file_size"] = humanize.naturalsize(
+                        os.stat(report["file"]).st_size, binary=True
+                    )
                 all_reports.append(report)
 
         def _s(report):
@@ -136,6 +140,7 @@ class Reporter:
             reports=all_reports,
             plugins=plugins,
             system_info=self.get_system_info(),
+            execution_info=self.execution_info,
         )
 
         return html_report
