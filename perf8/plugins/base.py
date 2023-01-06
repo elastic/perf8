@@ -149,19 +149,40 @@ class BasePlugin:
     async def probe(self, pid):
         pass
 
-    def generate_plot(self, path, extract_field, title, ylabel, target):
+    def generate_plots(self, path, *plot_defs):
+        # load lines once
+        rows = []
+        with open(path) as csvfile:
+            lines = csv.reader(csvfile, delimiter=",")
+            for row in lines:
+                rows.append(row)
+
+        self.info(f"Loaded {len(rows)} data points from {path}")
+        plots = []
+        for extract_field, title, ylabel, target in plot_defs:
+            plots.append(self.generate_plot(rows, extract_field, title, ylabel, target))
+        return plots
+
+    def generate_plot(self, path_or_rows, extract_field, title, ylabel, target):
         x = []
         y = []
 
-        with open(path) as csvfile:
-            lines = csv.reader(csvfile, delimiter=",")
+        if isinstance(path_or_rows, str):
+            cvsfile = open(path_or_rows)
+            lines = csv.reader(cvsfile, delimiter=",")
+        else:
+            lines = path_or_rows
+            cvsfile = None
+
+        try:
             for i, row in enumerate(lines):
                 if i == 0:
                     continue
                 x.append(row[-1])
                 y.append(extract_field(row))
-
-        self.info(f"Loaded {len(x)} data points from {path}")
+        finally:
+            if cvsfile is not None:
+                cvsfile.close()
 
         plt.cla()
         plt.plot(x, y, color="g", linestyle="dashed", marker="o", label=title)

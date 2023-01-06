@@ -20,6 +20,7 @@ import csv
 import time
 import os
 import psutil
+import humanize
 
 from perf8.plugins.base import BasePlugin, register_plugin
 
@@ -91,43 +92,26 @@ class ResourceWatcher(BasePlugin):
 
         self.report_fd.close()
 
-        def extract_memory(row):
-            return round(int(row[0]) / (1024 * 1024), 2)
-
-        def extract_cpu(row):
-            return float(row[6])
-
-        def extract_fds(row):
-            return int(row[1])
-
-        def extract_th(row):
-            return int(row[2])
-
-        def extract_ctx(row):
-            return int(row[3])
-
-        plot_file = self.generate_plot(
-            self.report_file, extract_memory, "Memory Usage (RSS)", "Bytes", "rss.png"
-        )
-        cpu_plot_file = self.generate_plot(
-            self.report_file, extract_cpu, "CPU%", "%", "cpu.png"
-        )
-        th_plot_file = self.generate_plot(
-            self.report_file, extract_fds, "Threads", "ths", "threads.png"
-        )
-        fds_plot_file = self.generate_plot(
-            self.report_file, extract_th, "File Descriptors", "FDs", "fds.png"
-        )
-        ctx_plot_file = self.generate_plot(
-            self.report_file, extract_ctx, "Context Switches", "ctx", "ctx.png"
+        plot_files = self.generate_plots(
+            self.report_file,
+            [
+                lambda row: humanize.naturalsize(float(row[0]), binary=True),
+                "Memory Usage (RSS)",
+                "Bytes",
+                "rss.png",
+            ],
+            [lambda row: float(row[6]), "CPU%", "%", "cpu.png"],
+            [lambda row: int(row[2]), "Threads", "ths", "threads.png"],
+            [lambda row: int(row[1]), "File Descriptors", "FDs", "fds.png"],
+            [lambda row: int(row[3]), "Context Switches", "ctx", "ctx.png"],
         )
 
         return [
-            {"label": "Memory Usage", "file": plot_file, "type": "image"},
-            {"label": "CPU Usage", "file": cpu_plot_file, "type": "image"},
-            {"label": "Threads", "file": th_plot_file, "type": "image"},
-            {"label": "FDs", "file": fds_plot_file, "type": "image"},
-            {"label": "Context Switch", "file": ctx_plot_file, "type": "image"},
+            {"label": "Memory Usage", "file": plot_files[0], "type": "image"},
+            {"label": "CPU Usage", "file": plot_files[1], "type": "image"},
+            {"label": "Threads", "file": plot_files[2], "type": "image"},
+            {"label": "FDs", "file": plot_files[3], "type": "image"},
+            {"label": "Context Switch", "file": plot_files[4], "type": "image"},
             {"label": "psutil CSV data", "file": self.report_file, "type": "artifact"},
         ]
 
