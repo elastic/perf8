@@ -22,11 +22,11 @@ The project is pluggable, and ships with a few tools:
 Installation
 ------------
 
-No release was done on PyPI yet, you can just run:
+Use `pip`:
 
 .. code-block:: sh
 
-   pip install git+https://github.com/elastic/perf8#egg=perf8
+   pip install perf8
 
 If you use the `cprofile` plugin, you will need to install `Graphviz` to
 get the `dot` utility. See. https://graphviz.org/download/
