@@ -57,7 +57,7 @@ classifiers = [
 setup(
     name="perf8",
     version=__version__,
-    url="https://pypi.org/project/perf8",
+    url="https://github.com/elastic/perf8",
     packages=find_packages(),
     long_description=description.strip(),
     description=("Your Tool For Python Performance Tracking"),
