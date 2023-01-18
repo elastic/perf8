@@ -25,6 +25,6 @@ jobs:
       - name: Install perf8
         run: |
           python3 -m venv .
-          bin/pip install requirements.txt
+          bin/pip install -r requirements.txt
       - name: Run Perf test
         run: bin/perf8 --all -c perf8/tests/ademo.py
