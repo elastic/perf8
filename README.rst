@@ -86,6 +86,71 @@ to detect if `perf8` is calling your app:
         await run_app()
 
 
+Running and publishing using Github
+-----------------------------------
+
+You can use Github Actions and Github Pages to run and publish a performance report. In your project,
+add a `.github/wokflows/perf.yml` file with this content:
+
+.. code-block:: yaml
+
+    ---
+    name: Perf report demo
+    on:
+      workflow_dispatch:
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    jobs:
+      build:
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            python-version:
+              - '3.10'
+          fail-fast: false
+        name: Performance report using Python ${{ matrix.python-version }}
+        steps:
+          - uses: actions/checkout@v3
+
+          - name: Setup Python
+            uses: actions/setup-python@v4
+            with:
+              python-version: ${{ matrix.python-version }}
+
+          - name: Install dot
+            run: sudo apt-get install graphviz -y
+
+          - name: Install perf8
+            run: pip3 install perf8
+
+          - name: Run Perf test
+            run: perf8 --all
+
+          - name: Setup GitHub Pages
+            id: pages
+            uses: actions/configure-pages@v1
+
+          - name: Upload pages artifact
+            uses: actions/upload-pages-artifact@v1
+            with:
+              path: /home/runner/work/perf8/perf8/perf8-report
+
+          - name: Deploy to GitHub Pages
+            id: deployment
+            uses: actions/deploy-pages@v1
+
+
+And extend `perf8 --all` so it runs your app. You will also need to go in the settings of your project and
+the `Pages` page to switch to `GitHub Actions` for the `Build And Deployement` source.
+
+When the action runs, it will update `https://<organization>.github.io/<project>`
+
+
+
 Screencast
 ----------
 
