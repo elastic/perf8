@@ -1,0 +1,29 @@
+---
+name: Perf report
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - '3.10'
+      fail-fast: false
+    name: Performance report using Python ${{ matrix.python-version }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dot
+        run: sudo apt-get install graphviz -y
+      - name: Install perf8
+        run:
+          python3 -m venv .
+          bin/pip install requirements.txt
+      - name: Run Perf test
+        run: bin/perf8 --all -c perf8/tests/ademo.py
