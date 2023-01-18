@@ -39,14 +39,14 @@ jobs:
       - name: Run Perf test
         run: bin/perf8 --all -c perf8/tests/ademo.py
 
-      - name: Archive Perf8 artifact
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: /home/runner/work/perf8/perf8/perf8-report
-
       - name: Setup GitHub Pages
         id: pages
         uses: actions/configure-pages@v1
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: /home/runner/work/perf8/perf8/perf8-report
 
       - name: Deploy to GitHub Pages
         id: deployment

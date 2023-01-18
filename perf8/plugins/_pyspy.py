@@ -101,6 +101,7 @@ class PySpy(BasePlugin):
         while running and time.time() - start < 120:
             self.warning(f"Process {pid} still running. Waiting...")
             time.sleep(1.0)
+            running = self.check_pid(pid)
 
         if self.proc.poll() is None:
             self.debug("Stopping Py-spy")
