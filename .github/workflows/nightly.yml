@@ -5,6 +5,11 @@ on:
     - cron: "0 0 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,21 +21,33 @@ jobs:
     name: Performance report using Python ${{ matrix.python-version }}
     steps:
       - uses: actions/checkout@v3
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install dot
         run: sudo apt-get install graphviz -y
+
       - name: Install perf8
         run: |
           python3 -m venv .
           bin/pip install -r requirements.txt
           bin/pip install -e .
+
       - name: Run Perf test
         run: bin/perf8 --all -c perf8/tests/ademo.py
+
       - name: Archive Perf8 artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-pages-artifact@v1
         with:
-          name: perf8-report
-          path: /home/runner/work/perf8/perf8/perf8-report/index.html
+          path: /home/runner/work/perf8/perf8/perf8-report
+
+      - name: Setup GitHub Pages
+        id: pages
+        uses: actions/configure-pages@v1
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
