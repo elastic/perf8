@@ -30,14 +30,17 @@ class ResourceWatcher(BasePlugin):
     in_process = False
     description = "System metrics with psutil"
     priority = 0
+    arguments = [
+        ("max-rss", {"type": int, "default": 0, "help": "Maximum allowed RSS"})
+    ]
 
     def __init__(self, args):
         super().__init__(args)
+        self.max_allowed_rss = args.psutil_max_rss
         self.report_fd = self.writer = self.proc_info = None
         self.report_file = os.path.join(args.target_dir, "report.csv")
 
-    def start(self, pid):
-        self.enabled = True
+    def _start(self, pid):
         self.proc_info = psutil.Process(pid)
         self.report_fd = open(self.report_file, "w")
         self.writer = csv.writer(self.report_fd)
@@ -55,6 +58,7 @@ class ResourceWatcher(BasePlugin):
         )
         # headers
         self.writer.writerow(self.rows)
+        self.max_rss = 0
 
     async def probe(self, pid):
         try:
@@ -65,8 +69,12 @@ class ResourceWatcher(BasePlugin):
 
         self.debug("Probing")
         probed_at = time.time()
+        current_rss = info["memory_info"].rss
+        if current_rss > self.max_rss:
+            self.max_rss = current_rss
+
         metrics = (
-            info["memory_info"].rss,
+            current_rss,
             info["num_fds"],
             info["num_threads"],
             info["num_ctx_switches"].voluntary,
@@ -83,9 +91,17 @@ class ResourceWatcher(BasePlugin):
         except ValueError:
             self.warning(f"Failed to write in {self.report_file}")
 
-    def stop(self, pid):
-        self.enabled = False
+    def success(self):
+        if self.max_allowed_rss == 0:
+            return True, ""
+        res = self.max_rss <= self.max_allowed_rss
+        if not res:
+            msg = f"Max allowed RSS reached {self.max_rss}"
+        else:
+            msg = ""
+        return res, msg
 
+    def _stop(self, pid):
         if self.report_fd is None:
             self.warning("No data collected for psutil")
             return []
