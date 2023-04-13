@@ -159,11 +159,11 @@ class BasePlugin:
 
         self.info(f"Loaded {len(rows)} data points from {path}")
         plots = []
-        for extract_field, title, ylabel, target in plot_defs:
-            plots.append(self.generate_plot(rows, extract_field, title, ylabel, target))
+        for extract_field, title, ylabel, target, yformatter in plot_defs:
+            plots.append(self.generate_plot(rows, extract_field, title, ylabel, target, yformatter))
         return plots
 
-    def generate_plot(self, path_or_rows, extract_field, title, ylabel, target):
+    def generate_plot(self, path_or_rows, extract_field, title, ylabel, target, yformatter):
         x = []
         y = []
 
@@ -190,6 +190,9 @@ class BasePlugin:
         plt.xticks(rotation=25)
         plt.xlabel("Duration (s)")
         plt.ylabel(ylabel)
+        if yformatter:
+            ax = plt.gca()
+            ax.yaxis.set_major_formatter(yformatter)
         plt.title(title, fontsize=20)
         plt.grid()
         plt.legend()
