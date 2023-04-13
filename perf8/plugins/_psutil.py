@@ -22,6 +22,7 @@ import os
 import psutil
 import humanize
 
+import matplotlib.ticker as tkr
 from perf8.plugins.base import BasePlugin, register_plugin
 
 
@@ -95,15 +96,16 @@ class ResourceWatcher(BasePlugin):
         plot_files = self.generate_plots(
             self.report_file,
             [
-                lambda row: humanize.naturalsize(float(row[0]), binary=True),
+                lambda row: float(row[0]),
                 "Memory Usage (RSS)",
                 "Bytes",
                 "rss.png",
+                tkr.FuncFormatter(humanize.naturalsize)
             ],
-            [lambda row: float(row[6]), "CPU%", "%", "cpu.png"],
-            [lambda row: int(row[2]), "Threads", "ths", "threads.png"],
-            [lambda row: int(row[1]), "File Descriptors", "FDs", "fds.png"],
-            [lambda row: int(row[3]), "Context Switches", "ctx", "ctx.png"],
+            [lambda row: float(row[6]), "CPU%", "%", "cpu.png", None],
+            [lambda row: int(row[2]), "Threads", "ths", "threads.png", None],
+            [lambda row: int(row[1]), "File Descriptors", "FDs", "fds.png", None],
+            [lambda row: int(row[3]), "Context Switches", "ctx", "ctx.png", None],
         )
 
         return [
