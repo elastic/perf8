@@ -172,11 +172,24 @@ class BasePlugin:
 
         self.info(f"Loaded {len(rows)} data points from {path}")
         plots = []
-        for extract_field, title, ylabel, target, yformatter in plot_defs:
-            plots.append(self.generate_plot(rows, extract_field, title, ylabel, target, yformatter))
+        for extract_field, title, ylabel, target, yformatter, threshold in plot_defs:
+            plots.append(
+                self.generate_plot(
+                    rows, extract_field, title, ylabel, target, yformatter, threshold
+                )
+            )
         return plots
 
-    def generate_plot(self, path_or_rows, extract_field, title, ylabel, target, yformatter):
+    def generate_plot(
+        self,
+        path_or_rows,
+        extract_field,
+        title,
+        ylabel,
+        target,
+        yformatter,
+        threshold=None,
+    ):
         x = []
         y = []
 
@@ -187,12 +200,16 @@ class BasePlugin:
             lines = path_or_rows
             cvsfile = None
 
+        max = 0
         try:
             for i, row in enumerate(lines):
                 if i == 0:
                     continue
+                value = extract_field(row)
+                if value > max:
+                    max = value
                 x.append(row[-1])
-                y.append(extract_field(row))
+                y.append(value)
         finally:
             if cvsfile is not None:
                 cvsfile.close()
@@ -207,6 +224,8 @@ class BasePlugin:
             ax = plt.gca()
             ax.yaxis.set_major_formatter(yformatter)
         plt.title(title, fontsize=20)
+        if threshold is not None and threshold < max:
+            plt.axhline(threshold, color="r")
         plt.grid()
         plt.legend()
         plot_file = os.path.join(self.target_dir, target)

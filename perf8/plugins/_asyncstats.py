@@ -86,7 +86,12 @@ class EventLoopMonitoring(AsyncBasePlugin):
             return int(row[1])
 
         loop_file = self.generate_plot(
-            self.report_file, extract_lag, "Event loop lag", "Seconds", "loop_lag.png", None
+            self.report_file,
+            extract_lag,
+            "Event loop lag",
+            "Seconds",
+            "loop_lag.png",
+            None,
         )
         coro_file = self.generate_plot(
             self.report_file,
@@ -94,7 +99,7 @@ class EventLoopMonitoring(AsyncBasePlugin):
             "Tasks concurrency",
             "tasks",
             "loop_coro.png",
-            None
+            None,
         )
 
         return [

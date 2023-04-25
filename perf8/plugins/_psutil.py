@@ -109,6 +109,11 @@ class ResourceWatcher(BasePlugin):
 
         self.report_fd.close()
 
+        if self.max_allowed_rss == 0:
+            threshold = None
+        else:
+            threshold = self.max_allowed_rss
+
         plot_files = self.generate_plots(
             self.report_file,
             [
@@ -116,12 +121,13 @@ class ResourceWatcher(BasePlugin):
                 "Memory Usage (RSS)",
                 "Bytes",
                 "rss.png",
-                tkr.FuncFormatter(humanize.naturalsize)
+                tkr.FuncFormatter(humanize.naturalsize),
+                threshold,
             ],
-            [lambda row: float(row[6]), "CPU%", "%", "cpu.png", None],
-            [lambda row: int(row[2]), "Threads", "ths", "threads.png", None],
-            [lambda row: int(row[1]), "File Descriptors", "FDs", "fds.png", None],
-            [lambda row: int(row[3]), "Context Switches", "ctx", "ctx.png", None],
+            [lambda row: float(row[6]), "CPU%", "%", "cpu.png", None, None],
+            [lambda row: int(row[2]), "Threads", "ths", "threads.png", None, None],
+            [lambda row: int(row[1]), "File Descriptors", "FDs", "fds.png", None, None],
+            [lambda row: int(row[3]), "Context Switches", "ctx", "ctx.png", None, None],
         )
 
         return [
