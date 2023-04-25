@@ -98,6 +98,7 @@ class BasePlugin:
     is_async = False
     priority = 0
     supported = True
+    arguments = []
 
     def __init__(self, args):
         self.args = args
@@ -110,6 +111,18 @@ class BasePlugin:
         except OSError:
             return False
         return True
+
+    def success(self):
+        return True, "Looking good"
+
+    def start(self, pid):
+        self.enabled = True
+        self._start(pid)
+
+    def stop(self, pid):
+        self.enabled = False
+        res = self._stop(pid)
+        return res + [{"result": self.success(), "type": "result", "name": self.name}]
 
     @classmethod
     @property

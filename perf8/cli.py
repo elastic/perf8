@@ -44,7 +44,9 @@ def parser():
             default=False,
             help=plugin.description,
         )
-        # XXX ask the plugin for its arguments and set them in a group
+
+        for name, options in plugin.arguments:
+            aparser.add_argument(f"--{plugin.name}-{name}", **options)
 
     aparser.add_argument(
         "-t",
@@ -135,8 +137,7 @@ def main(args=None):
     else:
         set_logger(logging.INFO)
 
-    asyncio.run(WatchedProcess(args).run())
-    return 0
+    return asyncio.run(WatchedProcess(args).run())
 
 
 if __name__ == "__main__":

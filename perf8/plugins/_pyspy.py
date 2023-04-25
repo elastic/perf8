@@ -62,7 +62,7 @@ class PySpy(BasePlugin):
             return False
         return True
 
-    def start(self, pid):
+    def _start(self, pid):
         running = self.check_pid(pid)
         start = time.time()
         while not running and time.time() - start < 120:
@@ -94,7 +94,7 @@ class PySpy(BasePlugin):
         if code is not None:
             self.warning(f"pyspy exited immediately with code {code}")
 
-    def stop(self, pid):
+    def _stop(self, pid):
         self.debug("Pyspy should stop by itself...")
         running = self.check_pid(pid)
         start = time.time()

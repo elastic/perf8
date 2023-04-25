@@ -53,6 +53,20 @@ function openTab(tabName) {
     <h1>Summary</h1>
     <div class="clearfix"></div>
   </header>
+  <h3>
+    Results
+  </h3>
+  <ul>
+    {% for report in reports %}
+    {% if report['type'] == 'result' %}
+    <li>
+      {% if report['result'][0] %}✅ {% else %}❌ {% endif %}
+      <span class="text-grey">{{report['name']}}</span> → {{report['result'][1]}}
+    </li>
+    {% endif %}
+    {% endfor %}
+  </ul>
+
 
   <h3>
     System info

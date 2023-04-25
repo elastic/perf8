@@ -137,6 +137,11 @@ class WatchedProcess:
         reporter = Reporter(self.args, execution_info)
         html_report = reporter.generate(report_json, self.out_reports, self.plugins)
         logger.info(f"Find the full report at {html_report}")
+        if not reporter.success:
+            logger.info("❌ We have failures")
+        else:
+            logger.info("🎉 Looking sharp!")
+        return reporter.success
 
     def _plugin_klass(self, fqn):
         module_name, klass_name = fqn.split(":")
