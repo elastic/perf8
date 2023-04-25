@@ -98,7 +98,7 @@ class ResourceWatcher(BasePlugin):
         if not res:
             msg = f"Max allowed RSS reached {self.max_rss}"
         else:
-            msg = ""
+            msg = "Excellent job, you did not kill the resources!"
         return res, msg
 
     def _stop(self, pid):

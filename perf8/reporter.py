@@ -128,8 +128,8 @@ class Reporter:
                     report["file_size"] = humanize.naturalsize(
                         os.stat(report["file"]).st_size, binary=True
                     )
-                elif report["type"] == "success":
-                    if report["result"]:
+                elif report["type"] == "result":
+                    if report["result"][0]:
                         self.successes += 1
                     else:
                         self.failures += 1
