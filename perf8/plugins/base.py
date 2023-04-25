@@ -113,7 +113,7 @@ class BasePlugin:
         return True
 
     def success(self):
-        return True, ""
+        return True, "Looking good"
 
     def start(self, pid):
         self.enabled = True
@@ -122,7 +122,7 @@ class BasePlugin:
     def stop(self, pid):
         self.enabled = False
         res = self._stop(pid)
-        return res + [{"result": self.success(), "type": "result"}]
+        return res + [{"result": self.success(), "type": "result", "name": self.name}]
 
     @classmethod
     @property

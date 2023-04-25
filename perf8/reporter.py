@@ -56,6 +56,12 @@ class Reporter:
         )
         self.args = args
         self.execution_info = execution_info
+        self.successes = 0
+        self.failures = 0
+
+    @property
+    def success(self):
+        return self.failures == 0 and self.successes > 0
 
     def get_system_info(self):
         return {
@@ -122,6 +128,11 @@ class Reporter:
                     report["file_size"] = humanize.naturalsize(
                         os.stat(report["file"]).st_size, binary=True
                     )
+                elif report["type"] == "success":
+                    if report["result"]:
+                        self.successes += 1
+                    else:
+                        self.failures += 1
                 all_reports.append(report)
 
         def _s(report):

@@ -137,8 +137,7 @@ def main(args=None):
     else:
         set_logger(logging.INFO)
 
-    asyncio.run(WatchedProcess(args).run())
-    return 0
+    return asyncio.run(WatchedProcess(args).run())
 
 
 if __name__ == "__main__":
