@@ -119,9 +119,12 @@ class BasePlugin:
         self.enabled = True
         self._start(pid)
 
-    def stop(self, pid):
+    def stop(self, pid=None):
         self.enabled = False
-        res = self._stop(pid)
+        if pid is not None:
+            res = self._stop(pid)
+        else:
+            res = []
         return res + [{"result": self.success(), "type": "result", "name": self.name}]
 
     @classmethod

@@ -158,6 +158,7 @@ def main():
             for report in plugin.report():
                 report["name"] = plugin.name
                 reports.append(report)
+            reports.extend(plugin.stop())
 
         report = os.path.join(args.target_dir, args.report)
         with open(report, "w") as f:
