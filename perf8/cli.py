@@ -25,7 +25,7 @@ import logging
 from perf8 import __version__
 from perf8.plugins.base import get_registered_plugins
 from perf8.watcher import WatchedProcess
-from perf8.logger import set_logger
+from perf8.logger import set_logger, logger
 
 
 HERE = os.path.dirname(__file__)
@@ -147,7 +147,10 @@ def main(args=None):
         set_logger(logging.INFO)
 
     result = asyncio.run(WatchedProcess(args).run())
-    with open(os.path.join(args.target_dir, args.status_filename), "w") as f:
+
+    status_file = os.path.join(args.target_dir, args.status_filename)
+    logger.info(f"Writing status in {status_file}")
+    with open(status_file, "w") as f:
         if result:
             f.write("0")
         else:

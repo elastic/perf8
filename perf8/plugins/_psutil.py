@@ -26,18 +26,30 @@ import matplotlib.ticker as tkr
 from perf8.plugins.base import BasePlugin, register_plugin
 
 
+def to_rss_bytes(data):
+    data = str(data)
+    if data.endswith("G"):
+        return int(data[:-1]) * 1024 * 1024 * 1024
+    elif data.endswith("M"):
+        return int(data[:-1]) * 1024 * 1024
+    elif data.endswith("K"):
+        return int(data[:-1]) * 1024
+    else:
+        return int(data)
+
+
 class ResourceWatcher(BasePlugin):
     name = "psutil"
     in_process = False
     description = "System metrics with psutil"
     priority = 0
     arguments = [
-        ("max-rss", {"type": int, "default": 0, "help": "Maximum allowed RSS"})
+        ("max-rss", {"type": str, "default": "0", "help": "Maximum allowed RSS"})
     ]
 
     def __init__(self, args):
         super().__init__(args)
-        self.max_allowed_rss = args.psutil_max_rss
+        self.max_allowed_rss = to_rss_bytes(args.psutil_max_rss)
         self.report_fd = self.writer = self.proc_info = None
         self.report_file = os.path.join(args.target_dir, "report.csv")
 
