@@ -228,7 +228,7 @@ class BasePlugin:
         if x:
             xtick_step = int(len(x) / 10) if len(x) > 9 else 1
             existing_ticks = ax.get_xticks()
-            ticks = existing_ticks[::xtick_step]
+            ticks = list(existing_ticks[::xtick_step])
             # If last tick is missing, add it!
             if ticks[-1] != x[-1]:
                 ticks.append(existing_ticks[-1])
