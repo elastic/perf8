@@ -64,6 +64,14 @@ class Reporter:
         return self.failures == 0 and self.successes > 0
 
     def get_system_info(self):
+        # cpu_freq is broken on M1 see https://github.com/giampaolo/psutil/issues/1892
+        # until this is resolved we can just ignore that info
+        try:
+            freq = f"{psutil.cpu_freq(percpu=False).current} Hz"
+        except FileNotFoundError:
+            logger.warning("Could not get the CPU frequency")
+            freq = "N/A"
+
         return {
             "OS Name": platform.system(),
             "Architecture": platform.architecture()[0],
@@ -72,7 +80,7 @@ class Reporter:
             "Python Version": platform.python_version(),
             "Physical Memory": humanize.naturalsize(system_memory, binary=True),
             "Number of Cores": psutil.cpu_count(),
-            "CPU Frequency": f"{psutil.cpu_freq(percpu=False).current} Hz",
+            "CPU Frequency": freq,
         }
 
     def render(self, name, **args):
