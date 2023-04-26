@@ -29,6 +29,8 @@ from perf8.logger import logger
 _ASYNC_PLUGINS_INSTANCES = []
 _PLUGINS_INSTANCES = {}
 
+plt.figure(figsize=(14, 10))
+
 
 def get_plugin_klass(fqn):
     module_name, klass_name = fqn.split(":")
@@ -219,7 +221,7 @@ class BasePlugin:
 
         plt.clf()
         ax = plt.gca()
-        
+
         plt.plot(x, y, color="g", linestyle="dashed", marker="o", label=title)
 
         plt.xticks(rotation=25)
