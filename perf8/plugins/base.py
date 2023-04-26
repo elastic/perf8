@@ -236,7 +236,7 @@ class BasePlugin:
         plt.savefig(plot_file)
         return plot_file
 
-    def _annotate_max(self, plt, ax, x,y, yformatter=None):
+    def _annotate_max(self, plt, ax, x, y, yformatter=None):
         """
         This function creates a second plot on top of original one
         and marks only the maximum value on it.
@@ -247,7 +247,7 @@ class BasePlugin:
 
         # Get the coordinate for maximum Y
         ymax = max(y)
-        x_for_ymax= x[y.index(ymax)]
+        x_for_ymax = x[y.index(ymax)]
 
         # Copy the plot while also moving
         # Yaxis labels to the right
@@ -256,10 +256,10 @@ class BasePlugin:
         # First draw same figure but invisible
         # Why? Cause otherwise Y axis label will
         # look weird :(
-        ax2.plot(x, y, 'r-', alpha=0)
+        ax2.plot(x, y, "r-", alpha=0)
 
         # Also draw red dot for the max value
-        ax2.plot(x_for_ymax, ymax, 'ro')
+        ax2.plot(x_for_ymax, ymax, "ro")
 
         # Keep only label for maximum Y on our axis
         ax2.set_yticks([ymax])
@@ -267,6 +267,7 @@ class BasePlugin:
         # Don't forget to format it
         if yformatter:
             ax2.yaxis.set_major_formatter(yformatter)
+
 
 class AsyncBasePlugin(BasePlugin):
     is_async = True
