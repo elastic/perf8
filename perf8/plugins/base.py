@@ -218,12 +218,23 @@ class BasePlugin:
                 cvsfile.close()
 
         plt.clf()
+        ax = plt.gca()
+        
         plt.plot(x, y, color="g", linestyle="dashed", marker="o", label=title)
 
         plt.xticks(rotation=25)
         plt.xlabel("Duration (s)")
+
+        if x:
+            xtick_step = int(len(x) / 10) if len(x) > 9 else 1
+            existing_ticks = ax.get_xticks()
+            ticks = existing_ticks[::xtick_step]
+            # If last tick is missing, add it!
+            if ticks[-1] != x[-1]:
+                ticks.append(existing_ticks[-1])
+            ax.set_xticks(ticks)
+
         plt.ylabel(ylabel)
-        ax = plt.gca()
         if yformatter:
             ax.yaxis.set_major_formatter(yformatter)
         plt.title(title, fontsize=20)
