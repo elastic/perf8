@@ -219,7 +219,7 @@ class BasePlugin:
 
         plt.clf()
         ax = plt.gca()
-        
+
         plt.plot(x, y, color="g", linestyle="dashed", marker="o", label=title)
 
         plt.xticks(rotation=25)

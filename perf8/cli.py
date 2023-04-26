@@ -55,6 +55,15 @@ def parser():
         type=str,
         help="target dir for results",
     )
+
+    aparser.add_argument(
+        "-s",
+        "--status-filename",
+        default="status",
+        type=str,
+        help="target dir for results",
+    )
+
     aparser.add_argument(
         "--title",
         default="Performance Report",
@@ -137,7 +146,14 @@ def main(args=None):
     else:
         set_logger(logging.INFO)
 
-    return asyncio.run(WatchedProcess(args).run())
+    result = asyncio.run(WatchedProcess(args).run())
+    with open(os.path.join(args.target_dir, args.status_filename), "w") as f:
+        if result:
+            f.write("0")
+        else:
+            f.write("1")
+
+    return result
 
 
 if __name__ == "__main__":
