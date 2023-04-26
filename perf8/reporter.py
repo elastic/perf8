@@ -69,6 +69,7 @@ class Reporter:
         try:
             freq = f"{psutil.cpu_freq(percpu=False).current} Hz"
         except FileNotFoundError:
+            logger.warning("Could not get the CPU frequency")
             freq = "N/A"
 
         return {
