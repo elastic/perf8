@@ -244,6 +244,8 @@ class BasePlugin:
         Also adds another yaxis on the right wthat has only
         label for the maximum value
         """
+        if not x or not y:
+            return
 
         # Get the coordinate for maximum Y
         ymax = max(y)
