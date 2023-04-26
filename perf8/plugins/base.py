@@ -29,6 +29,8 @@ from perf8.logger import logger
 _ASYNC_PLUGINS_INSTANCES = []
 _PLUGINS_INSTANCES = {}
 
+plt.figure(figsize=(14, 10))
+
 
 def get_plugin_klass(fqn):
     module_name, klass_name = fqn.split(":")
