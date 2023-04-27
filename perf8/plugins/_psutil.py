@@ -106,10 +106,10 @@ class ResourceWatcher(BasePlugin):
 
     def success(self):
         if self.max_allowed_rss == 0:
-            return True, ""
+            return super().success()
         res = self.max_rss <= self.max_allowed_rss
         if not res:
-            msg = f"Max allowed RSS reached {self.max_rss}"
+            msg = f"Max allowed RSS reached {humanize.naturalsize(self.max_rss)}"
         else:
             msg = "Excellent job, you did not kill the resources!"
         return res, msg

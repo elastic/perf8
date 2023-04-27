@@ -9,6 +9,9 @@
 #brand:hover {
   transform: rotate(360deg);
 }
+pre {
+    white-space: pre-wrap;
+}
 </style>
 
 
@@ -80,7 +83,9 @@ function openTab(tabName) {
   <h3>
     Command executed
   </h3>
-  <pre>$ python {{" ".join(args.command)}}</pre>
+  <pre>perf8 {% for name, value in arguments.items() %} --{{name.replace('_', '-')}}={{value}}{% endfor %}</pre>
+
+
   <div>It took {{execution_info['duration']}} to run. ⚠️  This duration may be impacted by plugins that run within the application</div>
 
   <h3>

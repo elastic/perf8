@@ -63,6 +63,9 @@ class Reporter:
     def success(self):
         return self.failures == 0 and self.successes > 0
 
+    def get_arguments(self):
+        return vars(self.args)
+
     def get_system_info(self):
         # cpu_freq is broken on M1 see https://github.com/giampaolo/psutil/issues/1892
         # until this is resolved we can just ignore that info
@@ -159,6 +162,7 @@ class Reporter:
             reports=all_reports,
             plugins=plugins,
             system_info=self.get_system_info(),
+            arguments=self.get_arguments(),
             execution_info=self.execution_info,
         )
 
