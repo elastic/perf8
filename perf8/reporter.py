@@ -91,6 +91,10 @@ class Reporter:
         args["args"] = self.args
         args["version"] = __version__
         args["created_at"] = datetime.datetime.now().strftime("%d-%m-%y %H:%M:%S")
+        args["success"] = self.success
+        args["failures"] = self.failures
+        args["successes"] = self.successes
+        args["total"] = self.failures + self.successes
         content = template.render(**args)
         target = os.path.join(self.args.target_dir, name)
         with open(target, "w") as f:

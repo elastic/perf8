@@ -12,6 +12,22 @@
 pre {
     white-space: pre-wrap;
 }
+div.duration {
+  border-radius: 25px;
+  padding: 20px;
+  color: white;
+  font-weight: bold;
+  text-align: center;
+}
+
+div.success {
+  background: #73AD21;
+}
+
+div.failure {
+  background: salmon;
+}
+
 </style>
 
 
@@ -56,6 +72,13 @@ function openTab(tabName) {
     <h1>Summary</h1>
     <div class="clearfix"></div>
   </header>
+
+  {% if success %}
+  <div class="duration success">SUCCESS! {{successes}}/{{total}}. The test took {{execution_info['duration']}}</div>
+  {% else %}
+  <div class="duration failure">FAILURE! {{successes}}/{{total}}. The test took {{execution_info['duration']}}</div>
+  {% endif %}
+
   <h3>
     Results
   </h3>
@@ -84,9 +107,6 @@ function openTab(tabName) {
     Command executed
   </h3>
   <pre>perf8 {% for name, value in arguments.items() %} --{{name.replace('_', '-')}}={{value}}{% endfor %}</pre>
-
-
-  <div>It took {{execution_info['duration']}} to run. ⚠️  This duration may be impacted by plugins that run within the application</div>
 
   <h3>
     Plugins used
