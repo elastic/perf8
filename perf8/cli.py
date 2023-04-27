@@ -63,7 +63,6 @@ def parser():
         type=str,
         help="target dir for results",
     )
-
     aparser.add_argument(
         "--title",
         default="Performance Report",
@@ -76,6 +75,12 @@ def parser():
         default="report.html",
         type=str,
         help="report file",
+    )
+    aparser.add_argument(
+        "--max-duration",
+        type=float,
+        default=0,
+        help="Max duration in seconds",
     )
     aparser.add_argument(
         "--refresh-rate",

@@ -132,7 +132,10 @@ class WatchedProcess:
 
         self.proc.wait()
 
-        execution_info = {"duration": humanize.precisedelta(execution_time)}
+        execution_info = {
+            "duration": humanize.precisedelta(execution_time),
+            "duration_s": execution_time,
+        }
         report_json = os.path.join(self.args.target_dir, "report.json")
         reporter = Reporter(self.args, execution_info)
         html_report = reporter.generate(report_json, self.out_reports, self.plugins)

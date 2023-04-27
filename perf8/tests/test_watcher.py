@@ -39,6 +39,7 @@ async def test_watcher():
         target_dir = tempfile.mkdtemp()
         verbose = 2
         psutil_max_rss = 0
+        max_duration = 0
 
     try:
         watcher = WatchedProcess(Args())
@@ -64,6 +65,7 @@ async def test_async_watcher():
         target_dir = tempfile.mkdtemp()
         verbose = 2
         psutil_max_rss = 0
+        max_duration = 0
 
     try:
         watcher = WatchedProcess(Args())

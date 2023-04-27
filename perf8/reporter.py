@@ -56,8 +56,12 @@ class Reporter:
         )
         self.args = args
         self.execution_info = execution_info
+        if args.max_duration == 0:
+            self.overtime = False
+        else:
+            self.overtime = self.execution_info["duration_s"] > args.max_duration
         self.successes = 0
-        self.failures = 0
+        self.failures = not self.overtime and 0 or 1
 
     @property
     def success(self):
@@ -121,8 +125,22 @@ class Reporter:
             )
 
         # generating index page
-        all_reports = []
-        num = 0
+        if self.args.max_duration > 0:
+            if self.overtime:
+                result = (
+                    False,
+                    f"Took over {humanize.precisedelta(self.args.max_duration)}",
+                )
+            else:
+                result = True, "Fast and Crisp"
+            all_reports = [
+                {"num": 0, "result": result, "type": "result", "name": "general"}
+            ]
+            num = 1
+        else:
+            all_reports = []
+            num = 0
+
         for item in reports.values():
             for report in item:
                 report["num"] = num
