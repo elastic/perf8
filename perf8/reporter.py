@@ -61,7 +61,7 @@ class Reporter:
         else:
             self.overtime = self.execution_info["duration_s"] > args.max_duration
         self.successes = 0
-        self.failures = not self.overtime and 0 or 1
+        self.failures = self.overtime and 1 or 0
 
     @property
     def success(self):
