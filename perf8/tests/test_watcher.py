@@ -40,6 +40,7 @@ async def test_watcher():
         verbose = 2
         psutil_max_rss = 0
         max_duration = 0
+        description = ""
 
     try:
         watcher = WatchedProcess(Args())
@@ -66,6 +67,7 @@ async def test_async_watcher():
         verbose = 2
         psutil_max_rss = 0
         max_duration = 0
+        description = ""
 
     try:
         watcher = WatchedProcess(Args())

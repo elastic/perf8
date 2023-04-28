@@ -12,20 +12,19 @@
 pre {
     white-space: pre-wrap;
 }
-div.duration {
-  border-radius: 25px;
-  padding: 20px;
-  color: white;
-  font-weight: bold;
-  text-align: center;
-}
 
 div.success {
   background: #73AD21;
+  color: white;
+  font-weight: bold;
+  font-size: 14pt;
 }
 
 div.failure {
   background: salmon;
+  color: white;
+  font-weight: bold;
+  font-size: 14pt;
 }
 
 </style>
@@ -73,12 +72,16 @@ function openTab(tabName) {
     <div class="clearfix"></div>
   </header>
 
-  {% if success %}
-  <div class="duration success">SUCCESS! {{successes}}/{{total}}. The test took {{execution_info['duration']}}</div>
-  {% else %}
-  <div class="duration failure">FAILURE! {{successes}}/{{total}}. The test took {{execution_info['duration']}}</div>
+  {% if description %}
+  <div class="card" style="margin-top: 10px; margin-bottom: 10px">{{description}}</div>
   {% endif %}
 
+  {% if success %}
+  <div class="card success">SUCCESS! {{successes}}/{{total}}. The test took {{execution_info['duration']}}</div>
+  {% else %}
+  <div class="card failure">FAILURE! {{successes}}/{{total}}. The test took {{execution_info['duration']}}</div>
+  {% endif %}
+  
   <h3>
     Results
   </h3>

@@ -57,6 +57,14 @@ def parser():
     )
 
     aparser.add_argument(
+        "-d",
+        "--description",
+        default=None,
+        type=str,
+        help="Describe the test in a few sentence (can be a file)",
+    )
+
+    aparser.add_argument(
         "-s",
         "--status-filename",
         default="status",

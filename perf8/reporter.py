@@ -99,6 +99,15 @@ class Reporter:
         args["failures"] = self.failures
         args["successes"] = self.successes
         args["total"] = self.failures + self.successes
+        if self.args.description is None:
+            desc = ""
+        elif os.path.exists(self.args.description):
+            with open(self.args.description) as f:
+                desc = f.read().strip()
+        else:
+            desc = self.args.description
+        args["description"] = desc
+
         content = template.render(**args)
         target = os.path.join(self.args.target_dir, name)
         with open(target, "w") as f:
