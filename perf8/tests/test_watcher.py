@@ -41,6 +41,7 @@ async def test_watcher():
         psutil_max_rss = 0
         max_duration = 0
         description = ""
+        psutil_disk_path = "/tmp"
 
     try:
         watcher = WatchedProcess(Args())
@@ -68,6 +69,7 @@ async def test_async_watcher():
         psutil_max_rss = 0
         max_duration = 0
         description = ""
+        psutil_disk_path = "/tmp"
 
     try:
         watcher = WatchedProcess(Args())

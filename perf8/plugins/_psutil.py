@@ -21,9 +21,33 @@ import time
 import os
 import psutil
 import humanize
+import tempfile
 
 import matplotlib.ticker as tkr
 from perf8.plugins.base import BasePlugin, register_plugin
+
+
+def scantree(path):
+    try:
+        for entry in os.scandir(path):
+            if entry.is_dir(follow_symlinks=False):
+                yield from scantree(entry.path)
+            else:
+                if not entry.name.startswith("."):
+                    yield entry
+    except PermissionError:
+        pass
+
+
+# XXX expensive
+def disk_usage(path):
+    size = 0
+    for entry in scantree(path):
+        try:
+            size += entry.stat().st_size
+        except (OSError, PermissionError, FileNotFoundError):
+            pass
+    return size
 
 
 def to_rss_bytes(data):
@@ -44,7 +68,11 @@ class ResourceWatcher(BasePlugin):
     description = "System metrics with psutil"
     priority = 0
     arguments = [
-        ("max-rss", {"type": str, "default": "0", "help": "Maximum allowed RSS"})
+        ("max-rss", {"type": str, "default": "0", "help": "Maximum allowed RSS"}),
+        (
+            "disk-path",
+            {"type": str, "default": tempfile.gettempdir(), "help": "Path to watch"},
+        ),
     ]
 
     def __init__(self, args):
@@ -52,13 +80,21 @@ class ResourceWatcher(BasePlugin):
         self.max_allowed_rss = to_rss_bytes(args.psutil_max_rss)
         self.report_fd = self.writer = self.proc_info = None
         self.report_file = os.path.join(args.target_dir, "report.csv")
+        self.path = args.psutil_disk_path
 
     def _start(self, pid):
         self.proc_info = psutil.Process(pid)
         self.report_fd = open(self.report_file, "w")
         self.writer = csv.writer(self.report_fd)
         self.started_at = time.time()
+        self.initial_disk_usage = disk_usage(self.path)
+
         self.rows = (
+            "disk_usage",
+            "disk_io_read_count",
+            "disk_io_write_count",
+            "disk_io_read_bytes",
+            "disk_io_write_bytes",
             "rss",
             "num_fds",
             "num_threads",
@@ -86,7 +122,14 @@ class ResourceWatcher(BasePlugin):
         if current_rss > self.max_rss:
             self.max_rss = current_rss
 
+        disk_io = psutil.disk_io_counters()
+
         metrics = (
+            disk_usage(self.path) - self.initial_disk_usage,
+            disk_io.read_count,
+            disk_io.write_count,
+            disk_io.read_bytes,
+            disk_io.write_bytes,
             current_rss,
             info["num_fds"],
             info["num_threads"],
@@ -129,17 +172,25 @@ class ResourceWatcher(BasePlugin):
         plot_files = self.generate_plots(
             self.report_file,
             [
-                lambda row: float(row[0]),
+                lambda row: float(row[5]),
                 "Memory Usage (RSS)",
                 "Bytes",
                 "rss.png",
                 tkr.FuncFormatter(humanize.naturalsize),
                 threshold,
             ],
-            [lambda row: float(row[6]), "CPU%", "%", "cpu.png", None, None],
-            [lambda row: int(row[2]), "Threads", "ths", "threads.png", None, None],
-            [lambda row: int(row[1]), "File Descriptors", "FDs", "fds.png", None, None],
-            [lambda row: int(row[3]), "Context Switches", "ctx", "ctx.png", None, None],
+            [lambda row: float(row[11]), "CPU%", "%", "cpu.png", None, None],
+            [lambda row: int(row[7]), "Threads", "ths", "threads.png", None, None],
+            [lambda row: int(row[6]), "File Descriptors", "FDs", "fds.png", None, None],
+            [lambda row: int(row[8]), "Context Switches", "ctx", "ctx.png", None, None],
+            [
+                lambda row: float(row[0]),
+                "Disk Usage",
+                "disk",
+                "disk.png",
+                tkr.FuncFormatter(humanize.naturalsize),
+                None,
+            ],
         )
 
         return [
@@ -148,6 +199,7 @@ class ResourceWatcher(BasePlugin):
             {"label": "Threads", "file": plot_files[2], "type": "image"},
             {"label": "FDs", "file": plot_files[3], "type": "image"},
             {"label": "Context Switch", "file": plot_files[4], "type": "image"},
+            {"label": "Disk Usage", "file": plot_files[5], "type": "image"},
             {"label": "psutil CSV data", "file": self.report_file, "type": "artifact"},
         ]
 

@@ -145,8 +145,12 @@ def main():
         run_script(script, script_args)
     finally:
         logger.info(f"Script is over -- sending a signal to {args.ppid}")
+
         # script is over, send a signal to the parent
-        os.kill(args.ppid, signal.SIGUSR1)
+        try:
+            os.kill(args.ppid, signal.SIGUSR1)
+        except ProcessLookupError:
+            logger.warning("Could not find parent process")
 
         for plugin in reversed(plugins):
             if not plugin.is_async and plugin.in_process:

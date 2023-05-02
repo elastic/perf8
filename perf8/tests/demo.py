@@ -22,6 +22,10 @@ Demo script to test perf8
 """
 import random
 import os
+import tempfile
+import shutil
+import string
+
 
 data = []
 RANGE = int(os.environ.get("RANGE", 50000))
@@ -48,9 +52,12 @@ def add_mem1():
     data.append("r" * get_random(100, 2000))
 
 
-def add_mem2():
+def add_mem2(tempdir):
     data.append("r" * get_random(100, 2000))
     add_mem3()
+    name = "".join(random.choice(string.ascii_lowercase) for i in range(10))
+    with open(os.path.join(tempdir, name), "w") as f:
+        f.write("data" * get_random(100, 2000))
 
 
 def add_mem3():
@@ -59,9 +66,11 @@ def add_mem3():
 
 # generates one GiB in RSS
 def main():
+    tempdir = tempfile.mkdtemp()
+
     for i in range(RANGE):
         add_mem1()
-        add_mem2()
+        add_mem2(tempdir)
 
         if get_random(1, 20) == 2:
             print(f"[{os.getpid()}] Busy adding data! ({i}/{RANGE})")
@@ -69,6 +78,8 @@ def main():
                 do_math(i, RANGE)
             except Exception as e:
                 print(e)
+
+    shutil.rmtree(tempdir)
 
 
 if __name__ == "__main__":
