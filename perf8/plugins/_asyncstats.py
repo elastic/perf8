@@ -22,6 +22,7 @@ import time
 import asyncio
 
 from perf8.plugins.base import AsyncBasePlugin, register_plugin
+from perf8.plot import Graph, Line
 
 
 class EventLoopMonitoring(AsyncBasePlugin):
@@ -85,26 +86,30 @@ class EventLoopMonitoring(AsyncBasePlugin):
         def extract_tasks(row):
             return int(row[1])
 
-        loop_file = self.generate_plot(
-            self.report_file,
-            extract_lag,
-            "Event loop lag",
-            "Seconds",
-            "loop_lag.png",
-            None,
-        )
-        coro_file = self.generate_plot(
-            self.report_file,
-            extract_tasks,
-            "Tasks concurrency",
-            "tasks",
-            "loop_coro.png",
-            None,
-        )
+        graphs = [
+            Graph(
+                "Event loop lag",
+                self.target_dir,
+                "loop_lag.png",
+                "Seconds",
+                None,
+                Line(extract_lag, "Event loop lag", None, "g"),
+            ),
+            Graph(
+                "Tasks concurrency",
+                self.target_dir,
+                "loop_coro.png",
+                "Tasks",
+                None,
+                Line(extract_tasks, "Tasks concurrency", None, "g"),
+            ),
+        ]
 
+        self.generate_plots(self.report_file, *graphs)
         return [
-            {"label": "Event loop lag", "file": loop_file, "type": "image"},
-            {"label": "Task concurrency", "file": coro_file, "type": "image"},
+            {"label": graph.title, "file": graph.plot_file, "type": "image"}
+            for graph in graphs
+        ] + [
             {
                 "label": "Event loop CSV data",
                 "file": self.report_file,

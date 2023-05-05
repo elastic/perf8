@@ -22,14 +22,11 @@ import csv
 import os
 import contextlib
 
-import matplotlib.pyplot as plt
 from perf8.logger import logger
 
 
 _ASYNC_PLUGINS_INSTANCES = []
 _PLUGINS_INSTANCES = {}
-
-plt.figure(figsize=(14, 10))
 
 
 def get_plugin_klass(fqn):
@@ -167,7 +164,7 @@ class BasePlugin:
     async def probe(self, pid):
         pass
 
-    def generate_plots(self, path, *plot_defs):
+    def generate_plots(self, path, *graphs):
         # load lines once
         rows = []
         with open(path) as csvfile:
@@ -176,112 +173,7 @@ class BasePlugin:
                 rows.append(row)
 
         self.info(f"Loaded {len(rows)} data points from {path}")
-        plots = []
-        for extract_field, title, ylabel, target, yformatter, threshold in plot_defs:
-            plots.append(
-                self.generate_plot(
-                    rows, extract_field, title, ylabel, target, yformatter, threshold
-                )
-            )
-        return plots
-
-    def generate_plot(
-        self,
-        path_or_rows,
-        extract_field,
-        title,
-        ylabel,
-        target,
-        yformatter,
-        threshold=None,
-    ):
-        x = []
-        y = []
-
-        if isinstance(path_or_rows, str):
-            cvsfile = open(path_or_rows)
-            lines = csv.reader(cvsfile, delimiter=",")
-        else:
-            lines = path_or_rows
-            cvsfile = None
-
-        max = 0
-        try:
-            for i, row in enumerate(lines):
-                if i == 0:
-                    continue
-                value = extract_field(row)
-                if value > max:
-                    max = value
-                x.append(row[-1])
-                y.append(value)
-        finally:
-            if cvsfile is not None:
-                cvsfile.close()
-
-        plt.clf()
-        ax = plt.gca()
-
-        plt.plot(x, y, color="g", linestyle="dashed", marker="o", label=title)
-
-        plt.xticks(rotation=25)
-        plt.xlabel("Duration (s)")
-
-        if x:
-            xtick_step = int(len(x) / 10) if len(x) > 9 else 1
-            existing_ticks = ax.get_xticks()
-            ticks = list(existing_ticks[::xtick_step])
-            # If last tick is missing, add it!
-            if ticks[-1] != x[-1]:
-                ticks.append(existing_ticks[-1])
-            ax.set_xticks(ticks)
-
-        plt.ylabel(ylabel)
-        if yformatter:
-            ax.yaxis.set_major_formatter(yformatter)
-        plt.title(title, fontsize=20)
-        if threshold is not None and threshold < max:
-            plt.axhline(threshold, color="r")
-        plt.grid()
-        self._annotate_max(plt, ax, x, y, yformatter)
-        plot_file = os.path.join(self.target_dir, target)
-        self.info(f"Saved plot file at {plot_file}")
-        plt.savefig(plot_file)
-        return plot_file
-
-    def _annotate_max(self, plt, ax, x, y, yformatter=None):
-        """
-        This function creates a second plot on top of original one
-        and marks only the maximum value on it.
-
-        Also adds another yaxis on the right wthat has only
-        label for the maximum value
-        """
-        if not x or not y:
-            return
-
-        # Get the coordinate for maximum Y
-        ymax = max(y)
-        x_for_ymax = x[y.index(ymax)]
-
-        # Copy the plot while also moving
-        # Yaxis labels to the right
-        ax2 = ax.twinx()
-
-        # First draw same figure but invisible
-        # Why? Cause otherwise Y axis label will
-        # look weird :(
-        ax2.plot(x, y, "r-", alpha=0)
-
-        # Also draw red dot for the max value
-        ax2.plot(x_for_ymax, ymax, "ro")
-
-        # Keep only label for maximum Y on our axis
-        ax2.set_yticks([ymax])
-
-        # Don't forget to format it
-        if yformatter:
-            ax2.yaxis.set_major_formatter(yformatter)
+        return [graph.generate(self, rows) for graph in graphs]
 
 
 class AsyncBasePlugin(BasePlugin):

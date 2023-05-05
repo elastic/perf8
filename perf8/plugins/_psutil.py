@@ -25,6 +25,7 @@ import tempfile
 
 import matplotlib.ticker as tkr
 from perf8.plugins.base import BasePlugin, register_plugin
+from perf8.plot import Graph, Line
 
 
 def scantree(path):
@@ -35,7 +36,7 @@ def scantree(path):
             else:
                 if not entry.name.startswith("."):
                     yield entry
-    except PermissionError:
+    except (FileNotFoundError, PermissionError):
         pass
 
 
@@ -81,6 +82,7 @@ class ResourceWatcher(BasePlugin):
         self.report_fd = self.writer = self.proc_info = None
         self.report_file = os.path.join(args.target_dir, "report.csv")
         self.path = args.psutil_disk_path
+        self.target_dir = args.target_dir
 
     def _start(self, pid):
         self.proc_info = psutil.Process(pid)
@@ -88,6 +90,7 @@ class ResourceWatcher(BasePlugin):
         self.writer = csv.writer(self.report_fd)
         self.started_at = time.time()
         self.initial_disk_usage = disk_usage(self.path)
+        self.initial_disk_io = psutil.disk_io_counters()
 
         self.rows = (
             "disk_usage",
@@ -126,10 +129,10 @@ class ResourceWatcher(BasePlugin):
 
         metrics = (
             disk_usage(self.path) - self.initial_disk_usage,
-            disk_io.read_count,
-            disk_io.write_count,
-            disk_io.read_bytes,
-            disk_io.write_bytes,
+            disk_io.read_count - self.initial_disk_io.read_count,
+            disk_io.write_count - self.initial_disk_io.write_count,
+            disk_io.read_bytes - self.initial_disk_io.read_bytes,
+            disk_io.write_bytes - self.initial_disk_io.write_bytes,
             current_rss,
             info["num_fds"],
             info["num_threads"],
@@ -169,39 +172,95 @@ class ResourceWatcher(BasePlugin):
         else:
             threshold = self.max_allowed_rss
 
-        plot_files = self.generate_plots(
-            self.report_file,
-            [
-                lambda row: float(row[5]),
-                "Memory Usage (RSS)",
-                "Bytes",
+        graphs = [
+            Graph(
+                "Memory Usage",
+                self.target_dir,
                 "rss.png",
+                "Bytes",
                 tkr.FuncFormatter(humanize.naturalsize),
-                threshold,
-            ],
-            [lambda row: float(row[11]), "CPU%", "%", "cpu.png", None, None],
-            [lambda row: int(row[7]), "Threads", "ths", "threads.png", None, None],
-            [lambda row: int(row[6]), "File Descriptors", "FDs", "fds.png", None, None],
-            [lambda row: int(row[8]), "Context Switches", "ctx", "ctx.png", None, None],
-            [
-                lambda row: float(row[0]),
-                "Disk Usage",
-                "disk",
-                "disk.png",
-                tkr.FuncFormatter(humanize.naturalsize),
+                Line(
+                    lambda row: float(row[5]),
+                    "RSS",
+                    threshold,
+                    "g",
+                ),
+            ),
+            Graph(
+                "CPU",
+                self.target_dir,
+                "cpu.png",
+                "%",
+                tkr.PercentFormatter(),
+                Line(lambda row: float(row[11]), "CPU%", None, "g"),
+            ),
+            Graph(
+                "Threads",
+                self.target_dir,
+                "threads.png",
+                "Count",
                 None,
-            ],
-        )
+                Line(
+                    lambda row: int(row[8]) / 100000000,
+                    "context switch (10k)",
+                    None,
+                    "b",
+                ),
+                Line(lambda row: int(row[7]), "threads", None, "g"),
+            ),
+            Graph(
+                "Disk I/O",
+                self.target_dir,
+                "disk_io.png",
+                "I/O Count",
+                None,
+                Line(
+                    lambda row: float(row[1]) / 100000,
+                    "Read Count (10M)",
+                    None,
+                    "r",
+                ),
+                Line(
+                    lambda row: float(row[2]) / 100000,
+                    "Write Count (10M)",
+                    None,
+                    "b",
+                ),
+                Line(lambda row: int(row[6]), "File Descriptors", None, "g"),
+            ),
+            Graph(
+                "Disk Usage",
+                self.target_dir,
+                "disk.png",
+                "Disk Usage",
+                tkr.FuncFormatter(humanize.naturalsize),
+                Line(
+                    lambda row: float(row[0]),
+                    "Usage",
+                    None,
+                    "g",
+                ),
+                Line(
+                    lambda row: float(row[3]),
+                    "Reads",
+                    None,
+                    "c",
+                ),
+                Line(
+                    lambda row: float(row[4]),
+                    "Writes",
+                    None,
+                    "y",
+                ),
+            ),
+        ]
+
+        self.generate_plots(self.report_file, *graphs)
 
         return [
-            {"label": "Memory Usage", "file": plot_files[0], "type": "image"},
-            {"label": "CPU Usage", "file": plot_files[1], "type": "image"},
-            {"label": "Threads", "file": plot_files[2], "type": "image"},
-            {"label": "FDs", "file": plot_files[3], "type": "image"},
-            {"label": "Context Switch", "file": plot_files[4], "type": "image"},
-            {"label": "Disk Usage", "file": plot_files[5], "type": "image"},
-            {"label": "psutil CSV data", "file": self.report_file, "type": "artifact"},
-        ]
+            {"label": graph.title, "file": graph.plot_file, "type": "image"}
+            for graph in graphs
+        ] + [{"label": "psutil CSV data", "file": self.report_file, "type": "artifact"}]
 
 
 register_plugin(ResourceWatcher)
