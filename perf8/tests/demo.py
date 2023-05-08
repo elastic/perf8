@@ -26,7 +26,7 @@ import tempfile
 import shutil
 import string
 import statsd
-
+import time
 
 data = []
 RANGE = int(os.environ.get("RANGE", 50000))
@@ -67,6 +67,7 @@ def add_mem3():
 
 # generates one GiB in RSS
 def main():
+    time.sleep(2)
     tempdir = tempfile.mkdtemp()
     c = statsd.StatsClient("localhost", 514)
 

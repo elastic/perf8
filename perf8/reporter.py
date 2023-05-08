@@ -205,7 +205,8 @@ class Reporter:
 
         # if we got stuff from statsd, we create one report per statsd type
         if self.statsd_data is not None:
-            series = self.statsd_data.get_series()
+            for series in self.statsd_data.get_series():
+                print(series)
 
             # generate plot here...
             # all_reports.append(report)

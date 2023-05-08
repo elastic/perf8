@@ -2,6 +2,7 @@ import asyncio
 import statsd
 from collections import defaultdict
 import functools
+import json
 
 
 HOST, PORT = "localhost", 514
@@ -14,37 +15,41 @@ async def write_messages():
 
 
 class StatsdData:
-    def __init__(self):
+    def __init__(self, report_file):
         self.counters = defaultdict(int)
         self.timers = defaultdict(list)
         self.gauges = defaultdict(int)
         self.sets = defaultdict(set)
-        self._when = list()
+        self.report_file = report_file
+        self.report_db = open(self.report_file, "a+")
 
     def flush(self):
-        self._when.append(
-            (
-                dict(self.counters),
-                dict(self.timers),
-                dict(self.gauges),
-                dict(self.sets)
-            )
+        if self.report_db is None:
+            return
+
+        entry = json.dumps(
+            {
+                "counters": dict(self.counters),
+                "timers": dict(self.timers),
+                "gauges": dict(self.gauges),
+                "sets": dict(self.sets),
+            }
         )
+        self.report_db.write(f"{entry}\n")
         self.counters.clear()
         self.timers.clear()
         self.gauges.clear()
         self.sets.clear()
 
+    def close(self):
+        self.report_db.close()
+        self.report_db = None
+
     def get_series(self):
         self.flush()
-        counters = defaultdict(list)
-
-        for event in self._when:
-            c, t, g, s = event
-            for key, value in c.items():
-                counters[key].append(value)
-
-        return {'counters': counters}
+        with open(self.report_file) as f:
+            for line in f.readlines():
+                yield json.loads(line.strip())
 
     def __str__(self):
         return (
@@ -67,6 +72,7 @@ class StatsdProtocol(asyncio.DatagramProtocol):
         data = data.split(b"|")
         data_type = data[1]
         ns, metric = data[0].split(b":")
+        ns = ns.decode("utf8")
 
         if data_type == b"c":
             self._data.counters[ns] += int(metric)
@@ -83,8 +89,6 @@ class StatsdProtocol(asyncio.DatagramProtocol):
         elif data_type == b"s":
             self._data.sets[ns].add(int(metric))
 
-        print(self._data)
-
 
 def start(data, port):
     loop = asyncio.get_event_loop()
@@ -95,9 +99,10 @@ def start(data, port):
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    d = StatsdData()
+    d = StatsdData("file.db")
     loop.run_until_complete(start(d, PORT))
     loop.run_until_complete(
         write_messages()
     )  # Start writing messages (or running tests)
     loop.run_forever()
+    d.close()

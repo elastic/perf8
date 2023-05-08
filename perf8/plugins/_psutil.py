@@ -83,6 +83,8 @@ class ResourceWatcher(BasePlugin):
         self.proc_info = None
         self.path = args.psutil_disk_path
         self.target_dir = args.target_dir
+        self.data_file = None
+        self.report_file = os.path.join(self.args.target_dir, "report.csv")
 
     def _start(self, pid):
         self.proc_info = psutil.Process(pid)
@@ -106,7 +108,6 @@ class ResourceWatcher(BasePlugin):
             "when",
             "since",
         )
-        self.report_file = os.path.join(self.args.target_dir, "report.csv")
         self.data_file = Datafile(self.report_file, self.rows)
         self.data_file.open()
         self.max_rss = 0
@@ -159,11 +160,12 @@ class ResourceWatcher(BasePlugin):
         return res, msg
 
     def _stop(self, pid):
-        if self.data_file.count == 0:
-            self.warning("No data collected for psutil")
-            return []
-
-        self.data_file.close()
+        if self.data_file is not None:
+            if self.data_file.count == 0:
+                self.warning("No data collected for psutil")
+                return []
+            else:
+                self.data_file.close()
 
         if self.max_allowed_rss == 0:
             threshold = None
