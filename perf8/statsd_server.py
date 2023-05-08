@@ -19,6 +19,32 @@ class StatsdData:
         self.timers = defaultdict(list)
         self.gauges = defaultdict(int)
         self.sets = defaultdict(set)
+        self._when = list()
+
+    def flush(self):
+        self._when.append(
+            (
+                dict(self.counters),
+                dict(self.timers),
+                dict(self.gauges),
+                dict(self.sets)
+            )
+        )
+        self.counters.clear()
+        self.timers.clear()
+        self.gauges.clear()
+        self.sets.clear()
+
+    def get_series(self):
+        self.flush()
+        counters = defaultdict(list)
+
+        for event in self._when:
+            c, t, g, s = event
+            for key, value in c.items():
+                counters[key].append(value)
+
+        return {'counters': counters}
 
     def __str__(self):
         return (

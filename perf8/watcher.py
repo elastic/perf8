@@ -84,6 +84,11 @@ class WatchedProcess:
                     continue
                 await plugin.probe(self.pid)
                 logger.debug(f"Sent a probe to {plugin.name}")
+
+            if self.stats_data is not None:
+                logger.debug("Flushing statsd")
+                self.stats_data.flush()
+
             if self.proc.poll() is not None:
                 break
             await asyncio.sleep(self.every)
