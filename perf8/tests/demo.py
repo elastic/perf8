@@ -25,6 +25,7 @@ import os
 import tempfile
 import shutil
 import string
+import statsd
 
 
 data = []
@@ -67,8 +68,10 @@ def add_mem3():
 # generates one GiB in RSS
 def main():
     tempdir = tempfile.mkdtemp()
+    c = statsd.StatsClient("localhost", 514)
 
     for i in range(RANGE):
+        c.incr("cycle")
         add_mem1()
         add_mem2(tempdir)
 

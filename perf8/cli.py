@@ -106,6 +106,20 @@ def parser():
     )
 
     aparser.add_argument(
+        "--statsd",
+        action="store_true",
+        default=False,
+        help="Starts a Statsd server",
+    )
+
+    aparser.add_argument(
+        "--statsd-port",
+        type=int,
+        default=514,
+        help="Statsd port",
+    )
+
+    aparser.add_argument(
         "--all",
         action="store_true",
         default=False,

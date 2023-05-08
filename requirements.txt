@@ -7,3 +7,4 @@ py-spy>=0.3.14
 importlib-metadata>=5.1.0
 Jinja2>=3.1.2
 humanize>=4.4.0
+statsd>=4.0.1

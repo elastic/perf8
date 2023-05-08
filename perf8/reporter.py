@@ -17,6 +17,7 @@
 # under the License.
 #
 import os
+import csv
 import json
 import datetime
 from collections import defaultdict
@@ -49,8 +50,32 @@ else:
     system_memory = psutil.virtual_memory().total
 
 
+class Datafile:
+    def __init__(self, report_file, fields):
+        self.report_file = report_file
+        self.rows = fields
+        self.writer = None
+        self.count = 0
+
+    def open(self):
+        self.report_fd = open(self.report_file, "w")
+        self.writer = csv.writer(self.report_fd)
+        self.writer.writerow(self.rows)
+
+    def add(self, values):
+        try:
+            self.writer.writerow(values)
+            self.report_fd.flush()
+        except ValueError:
+            self.warning(f"Failed to write in {self.report_file}")
+        self.count += 1
+
+    def close(self):
+        self.report_fd.close()
+
+
 class Reporter:
-    def __init__(self, args, execution_info):
+    def __init__(self, args, execution_info, statsd_data):
         self.environment = Environment(
             loader=FileSystemLoader(os.path.join(HERE, "templates"))
         )
@@ -62,6 +87,7 @@ class Reporter:
             self.overtime = self.execution_info["duration_s"] > args.max_duration
         self.successes = 0
         self.failures = self.overtime and 1 or 0
+        self.statsd_data = statsd_data
 
     @property
     def success(self):
