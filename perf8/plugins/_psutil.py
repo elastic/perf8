@@ -82,23 +82,14 @@ class ResourceWatcher(BasePlugin):
         self.max_allowed_rss = to_rss_bytes(args.psutil_max_rss)
         self.proc_info = None
         self.path = args.psutil_disk_path
-<<<<<<< HEAD
         self.target_dir = args.target_dir
-=======
-<<<<<<< Updated upstream
->>>>>>> d5d1a61 (savepoint)
 
     def _start(self, pid):
         self.proc_info = psutil.Process(pid)
-        self.report_fd = open(self.report_file, "w")
-        self.writer = csv.writer(self.report_fd)
         self.started_at = time.time()
         self.initial_disk_usage = disk_usage(self.path)
         self.initial_disk_io = psutil.disk_io_counters()
 
-=======
-        self.target_dir = args.target_dir
->>>>>>> Stashed changes
         self.rows = (
             "disk_usage",
             "disk_io_read_count",
@@ -115,15 +106,9 @@ class ResourceWatcher(BasePlugin):
             "when",
             "since",
         )
-        self.report_file = os.path.join(args.target_dir, "report.csv")
+        self.report_file = os.path.join(self.args.target_dir, "report.csv")
         self.data_file = Datafile(self.report_file, self.rows)
-
-    def _start(self, pid):
-        self.proc_info = psutil.Process(pid)
         self.data_file.open()
-        self.started_at = time.time()
-        self.initial_disk_usage = disk_usage(self.path)
-        self.initial_disk_io = psutil.disk_io_counters()
         self.max_rss = 0
 
     async def probe(self, pid):

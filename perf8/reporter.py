@@ -67,7 +67,7 @@ class Datafile:
             self.writer.writerow(values)
             self.report_fd.flush()
         except ValueError:
-            self.warning(f"Failed to write in {self.report_file}")
+            logger.warning(f"Failed to write in {self.report_file}")
         self.count += 1
 
     def close(self):
@@ -203,9 +203,10 @@ class Reporter:
                         self.failures += 1
                 all_reports.append(report)
 
-        # if we got stuff from statsd we create one report per statsd type
+        # if we got stuff from statsd, we create one report per statsd type
         if self.statsd_data is not None:
-            series = self.stats_data.get_series()
+            series = self.statsd_data.get_series()
+
             # generate plot here...
             # all_reports.append(report)
 

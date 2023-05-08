@@ -86,7 +86,7 @@ class StatsdProtocol(asyncio.DatagramProtocol):
         print(self._data)
 
 
-async def start(data, port):
+def start(data, port):
     loop = asyncio.get_event_loop()
     return loop.create_datagram_endpoint(
         functools.partial(StatsdProtocol, data), local_addr=("0.0.0.0", port)

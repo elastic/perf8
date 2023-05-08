@@ -57,13 +57,6 @@ class WatchedProcess:
         signal.signal(signal.SIGTERM, self.exit)
         signal.signal(signal.SIGUSR1, self.runner_exit)
         self.started = False
-        if self.args.statsd:
-            self.stats_data = StatsdData()
-            logger.info(f"Listening to statsd events on port {self.args.statsd_port}")
-            self.stats_server = start(self.stats_data, self.args.statsd_port)
-        else:
-            self.stats_server = None
-            self.stats_data = None
 
     def exit(self, signum, frame):
         logger.info(f"We got a {signum} signal, passing it along")
@@ -98,6 +91,14 @@ class WatchedProcess:
         self.started = True
         for plugin in self.out_plugins:
             plugin.start(self.pid)
+        if self.args.statsd:
+            self.stats_data = StatsdData()
+            logger.info(f"Listening to statsd events on port {self.args.statsd_port}")
+            self.stats_server = asyncio.create_task(start(self.stats_data,
+                                                          self.args.statsd_port))
+        else:
+            self.stats_server = None
+            self.stats_data = None
 
     def stop(self):
         if not self.started:
@@ -143,6 +144,8 @@ class WatchedProcess:
         finally:
             if self.stats_server is not None:
                 await self.stats_server
+                transport, proto = self.stats_server.result()
+                transport.close()
             self.stop()
 
         self.proc.wait()
