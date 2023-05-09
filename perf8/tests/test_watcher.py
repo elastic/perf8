@@ -42,6 +42,8 @@ async def test_watcher():
         max_duration = 0
         description = ""
         psutil_disk_path = "/tmp"
+        statsd = True
+        statsd_port = 514
 
     try:
         watcher = WatchedProcess(Args())
@@ -70,6 +72,8 @@ async def test_async_watcher():
         max_duration = 0
         description = ""
         psutil_disk_path = "/tmp"
+        statsd = True
+        statsd_port = 514
 
     try:
         watcher = WatchedProcess(Args())

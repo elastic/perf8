@@ -31,6 +31,7 @@ import humanize
 from perf8.plugins.base import get_registered_plugins
 from perf8.reporter import Reporter
 from perf8.logger import logger
+from perf8.statsd_server import start, StatsdData
 
 
 HERE = os.path.dirname(__file__)
@@ -56,6 +57,8 @@ class WatchedProcess:
         signal.signal(signal.SIGTERM, self.exit)
         signal.signal(signal.SIGUSR1, self.runner_exit)
         self.started = False
+        self.stats_server = None
+        self.stats_data = None
 
     def exit(self, signum, frame):
         logger.info(f"We got a {signum} signal, passing it along")
@@ -76,8 +79,14 @@ class WatchedProcess:
                     continue
                 await plugin.probe(self.pid)
                 logger.debug(f"Sent a probe to {plugin.name}")
+
+            if self.stats_data is not None:
+                logger.debug("Flushing statsd")
+                self.stats_data.flush()
+
             if self.proc.poll() is not None:
                 break
+
             await asyncio.sleep(self.every)
 
     def start(self):
@@ -85,6 +94,13 @@ class WatchedProcess:
         self.started = True
         for plugin in self.out_plugins:
             plugin.start(self.pid)
+        if self.args.statsd:
+            statsd_json = os.path.join(self.args.target_dir, "statsd.json")
+            self.stats_data = StatsdData(statsd_json)
+            logger.info(f"Listening to statsd events on port {self.args.statsd_port}")
+            self.stats_server = asyncio.create_task(
+                start(self.stats_data, self.args.statsd_port)
+            )
 
     def stop(self):
         if not self.started:
@@ -128,6 +144,11 @@ class WatchedProcess:
             execution_time = time.time() - start
             logger.info(f"Command execution time {execution_time:.2f} seconds.")
         finally:
+            if self.stats_server is not None:
+                await self.stats_server
+                transport, proto = self.stats_server.result()
+                transport.close()
+                self.stats_data.close()
             self.stop()
 
         self.proc.wait()
@@ -137,7 +158,7 @@ class WatchedProcess:
             "duration_s": execution_time,
         }
         report_json = os.path.join(self.args.target_dir, "report.json")
-        reporter = Reporter(self.args, execution_info)
+        reporter = Reporter(self.args, execution_info, self.stats_data)
         html_report = reporter.generate(report_json, self.out_reports, self.plugins)
         logger.info(f"Find the full report at {html_report}")
         if not reporter.success:

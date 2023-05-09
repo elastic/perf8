@@ -25,7 +25,8 @@ import os
 import tempfile
 import shutil
 import string
-
+import statsd
+import time
 
 data = []
 RANGE = int(os.environ.get("RANGE", 50000))
@@ -66,13 +67,18 @@ def add_mem3():
 
 # generates one GiB in RSS
 def main():
+    time.sleep(2)
     tempdir = tempfile.mkdtemp()
+    c = statsd.StatsClient("localhost", 514)
 
     for i in range(RANGE):
+        c.incr("cycle")
         add_mem1()
         add_mem2(tempdir)
 
         if get_random(1, 20) == 2:
+            c.incr("random")
+
             print(f"[{os.getpid()}] Busy adding data! ({i}/{RANGE})")
             try:
                 do_math(i, RANGE)

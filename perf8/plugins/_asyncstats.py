@@ -17,12 +17,12 @@
 # under the License.
 #
 import os
-import csv
 import time
 import asyncio
 
 from perf8.plugins.base import AsyncBasePlugin, register_plugin
 from perf8.plot import Graph, Line
+from perf8.reporter import Datafile
 
 
 class EventLoopMonitoring(AsyncBasePlugin):
@@ -35,8 +35,15 @@ class EventLoopMonitoring(AsyncBasePlugin):
         self.loop = self._prober = self.started_at = None
         self._idle_time = 5
         self._running = False
-        self.report_fd = self.writer = self.proc_info = None
+        self.proc_info = None
         self.report_file = os.path.join(args.target_dir, "loop.csv")
+        self.rows = (
+            "lag",
+            "num_tasks",
+            "when",
+            "since",
+        )
+        self.data_file = Datafile(self.report_file, self.rows)
 
     async def _probe(self):
         while self._running:
@@ -50,21 +57,15 @@ class EventLoopMonitoring(AsyncBasePlugin):
                 when,
                 int(when - self.started_at),
             )
-            self.writer.writerow(metrics)
+            try:
+                self.data_file.add(metrics)
+            except ValueError:
+                self.warning(f"Failed to write in {self.report_file}")
 
     async def _enable(self, loop):
         self.loop = loop
-        self.report_fd = open(self.report_file, "w")
-        self.writer = csv.writer(self.report_fd)
+        self.data_file.open()
         self.started_at = time.time()
-        self.rows = (
-            "lag",
-            "num_tasks",
-            "when",
-            "since",
-        )
-        # headers
-        self.writer.writerow(self.rows)
         self._running = True
         self._prober = asyncio.create_task(self._probe())
 
@@ -75,10 +76,10 @@ class EventLoopMonitoring(AsyncBasePlugin):
             await self._prober
 
     def report(self):
-        if self.report_fd is None:
+        if self.data_file.count == 0:
             return []
 
-        self.report_fd.close()
+        self.data_file.close()
 
         def extract_lag(row):
             return float(row[0])

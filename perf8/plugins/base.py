@@ -164,15 +164,18 @@ class BasePlugin:
     async def probe(self, pid):
         pass
 
-    def generate_plots(self, path, *graphs):
+    def generate_plots(self, path_or_rows, *graphs):
         # load lines once
-        rows = []
-        with open(path) as csvfile:
-            lines = csv.reader(csvfile, delimiter=",")
-            for row in lines:
-                rows.append(row)
+        if isinstance(path_or_rows, str):
+            rows = []
+            with open(path_or_rows) as csvfile:
+                lines = csv.reader(csvfile, delimiter=",")
+                for row in lines:
+                    rows.append(row)
+        else:
+            rows = path_or_rows
 
-        self.info(f"Loaded {len(rows)} data points from {path}")
+        self.info(f"Loaded {len(rows)} data points from {path_or_rows}")
         return [graph.generate(self, rows) for graph in graphs]
 
 

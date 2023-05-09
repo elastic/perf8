@@ -25,8 +25,13 @@ plt.figure(figsize=(14, 10))
 
 
 class Line:
-    def __init__(self, extractor, title, threshold, color):
-        self.extractor = extractor
+    def __init__(self, samples_or_extractor, title, threshold, color):
+        if callable(samples_or_extractor):
+            self.extractor = samples_or_extractor
+            self.samples = None
+        else:
+            self.samples = samples_or_extractor
+            self.extractor = None
         self.title = title
         self.threshold = threshold
         self.color = color
@@ -61,7 +66,7 @@ class Graph:
             bbox=dict(boxstyle="square,pad=0.3", fc="w", ec="red"),
         )
 
-    def generate(self, plugin, path_or_rows):
+    def generate(self, plugin, path_or_rows=None):
         if isinstance(path_or_rows, str):
             with open(path_or_rows) as cvsfile:
                 samples = [line for line in csv.reader(cvsfile, delimiter=",")]
@@ -76,14 +81,29 @@ class Graph:
             x = []
             y = []
             y_max = x_max = 0
-            for i, row in enumerate(samples):
-                if i == 0:
+
+            if samples is None:
+                line_samples = line.samples
+                extract = False
+            else:
+                extract = True
+                line_samples = samples
+
+            for i, row in enumerate(line_samples):
+                if extract and i == 0:
                     continue
-                value = line.extractor(row)
+
+                if extract:
+                    value = line.extractor(row)
+                    x_value = row[-1]
+                else:
+                    x_value, value = row
+
                 if value > y_max:
                     y_max = value
-                    x_max = row[-1]
-                x.append(row[-1])
+                    x_max = x_value
+
+                x.append(x_value)
                 y.append(value)
 
             plt.plot(

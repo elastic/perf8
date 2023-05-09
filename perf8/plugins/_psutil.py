@@ -16,7 +16,6 @@
 # specific language governing permissions and limitations
 # under the License.
 #
-import csv
 import time
 import os
 import psutil
@@ -24,8 +23,10 @@ import humanize
 import tempfile
 
 import matplotlib.ticker as tkr
+
 from perf8.plugins.base import BasePlugin, register_plugin
 from perf8.plot import Graph, Line
+from perf8.reporter import Datafile
 
 
 def scantree(path):
@@ -79,15 +80,14 @@ class ResourceWatcher(BasePlugin):
     def __init__(self, args):
         super().__init__(args)
         self.max_allowed_rss = to_rss_bytes(args.psutil_max_rss)
-        self.report_fd = self.writer = self.proc_info = None
-        self.report_file = os.path.join(args.target_dir, "report.csv")
+        self.proc_info = None
         self.path = args.psutil_disk_path
         self.target_dir = args.target_dir
+        self.data_file = None
+        self.report_file = os.path.join(self.args.target_dir, "report.csv")
 
     def _start(self, pid):
         self.proc_info = psutil.Process(pid)
-        self.report_fd = open(self.report_file, "w")
-        self.writer = csv.writer(self.report_fd)
         self.started_at = time.time()
         self.initial_disk_usage = disk_usage(self.path)
         self.initial_disk_io = psutil.disk_io_counters()
@@ -108,8 +108,8 @@ class ResourceWatcher(BasePlugin):
             "when",
             "since",
         )
-        # headers
-        self.writer.writerow(self.rows)
+        self.data_file = Datafile(self.report_file, self.rows)
+        self.data_file.open()
         self.max_rss = 0
 
     async def probe(self, pid):
@@ -145,8 +145,7 @@ class ResourceWatcher(BasePlugin):
         )
 
         try:
-            self.writer.writerow(metrics)
-            self.report_fd.flush()
+            self.data_file.add(metrics)
         except ValueError:
             self.warning(f"Failed to write in {self.report_file}")
 
@@ -161,11 +160,12 @@ class ResourceWatcher(BasePlugin):
         return res, msg
 
     def _stop(self, pid):
-        if self.report_fd is None:
-            self.warning("No data collected for psutil")
-            return []
-
-        self.report_fd.close()
+        if self.data_file is not None:
+            if self.data_file.count == 0:
+                self.warning("No data collected for psutil")
+                return []
+            else:
+                self.data_file.close()
 
         if self.max_allowed_rss == 0:
             threshold = None
