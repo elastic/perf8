@@ -30,6 +30,8 @@ import humanize
 from jinja2 import Environment, FileSystemLoader
 from perf8 import __version__
 from perf8.logger import logger
+from perf8.plot import Graph, Line
+from matplotlib.colors import BASE_COLORS
 
 
 HERE = os.path.dirname(__file__)
@@ -205,11 +207,51 @@ class Reporter:
 
         # if we got stuff from statsd, we create one report per statsd type
         if self.statsd_data is not None:
-            for series in self.statsd_data.get_series():
-                print(series)
+            by_dates = []
+            counter_keys = []
 
-            # generate plot here...
-            # all_reports.append(report)
+            for series in self.statsd_data.get_series():
+                by_date = {}
+                for key, value in series["counters"].items():
+                    if key not in counter_keys:
+                        counter_keys.append(key)
+                    by_date[key] = value
+
+                by_dates.append((series["when"], by_date))
+
+            lines = []
+            colors = list(BASE_COLORS.keys())
+
+            for i, key in enumerate(counter_keys):
+                samples = []
+                for y, (when, data) in enumerate(by_dates):
+                    samples.append((when, data.get(key, 0)))
+                lines.append(Line(samples, key, None, colors[i]))
+
+            graph = Graph(
+                "Statsd Counters",
+                self.args.target_dir,
+                "statsd.png",
+                "count",
+                None,
+                *lines,
+            )
+
+            report = {
+                "type": "image",
+                "file": graph.generate(logger),
+                "label": "Statsd Counters",
+            }
+            report["num"] = num
+            report["id"] = f"report-{num}"
+            num += 1
+
+            with open(report["file"], "rb") as f:
+                data = base64.b64encode(f.read()).decode("utf-8")
+                report["image"] = data
+                report["mimetype"] = mimetypes.guess_type(report["file"])[0]
+
+            all_reports.append(report)
 
         def _s(report):
             if report["type"] == "artifact":

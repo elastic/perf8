@@ -77,6 +77,8 @@ def main():
         add_mem2(tempdir)
 
         if get_random(1, 20) == 2:
+            c.incr("random")
+
             print(f"[{os.getpid()}] Busy adding data! ({i}/{RANGE})")
             try:
                 do_math(i, RANGE)

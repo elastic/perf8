@@ -3,6 +3,7 @@ import statsd
 from collections import defaultdict
 import functools
 import json
+import time
 
 
 HOST, PORT = "localhost", 514
@@ -21,14 +22,21 @@ class StatsdData:
         self.gauges = defaultdict(int)
         self.sets = defaultdict(set)
         self.report_file = report_file
-        self.report_db = open(self.report_file, "a+")
+        self.report_db = open(self.report_file, "w")
+        self.first = None
 
     def flush(self):
         if self.report_db is None:
             return
 
+        if self.first is None:
+            self.first = time.time()
+            when = 0
+        else:
+            when = time.time() - self.first
         entry = json.dumps(
             {
+                "when": when,
                 "counters": dict(self.counters),
                 "timers": dict(self.timers),
                 "gauges": dict(self.gauges),
