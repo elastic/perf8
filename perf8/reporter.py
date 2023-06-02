@@ -103,7 +103,7 @@ class Reporter:
         # until this is resolved we can just ignore that info
         try:
             freq = f"{psutil.cpu_freq(percpu=False).current} Hz"
-        except FileNotFoundError:
+        except (FileNotFoundError, AttributeError):
             logger.warning("Could not get the CPU frequency")
             freq = "N/A"
 
