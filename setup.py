@@ -32,8 +32,7 @@ with open("requirements.txt") as f:
         req = req.strip()
         if req == "" or req.startswith("#"):
             continue
-        requirement = re.split(">|=", req)[0]
-        install_requires.append(requirement)
+        install_requires.append(req)
 
 
 description = ""
