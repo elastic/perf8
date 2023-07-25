@@ -12,7 +12,7 @@ all: build
 $(PYTHON):
 	$(SYSTEM_PYTHON) -m venv .
 	$(PYTHON) -m pip install --upgrade pip
-	$(PYTHON) setup.py develop
+	$(BIN)/pip install -r requirements.txt
 	$(BIN)/pip install tox
 	$(BIN)/pip install twine
 
