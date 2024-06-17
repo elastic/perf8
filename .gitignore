@@ -111,6 +111,7 @@ env.bak/
 venv.bak/
 bin/
 pyvenv.cfg
+share/
 
 # Spyder project settings
 .spyderproject
@@ -137,3 +138,7 @@ dmypy.json
 
 # test reports
 perf8-report/
+
+#jetbrains
+.idea
+*.iml
