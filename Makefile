@@ -5,7 +5,7 @@ BUILD_DIRS = bin build include lib lib64 man share
 VIRTUALENV = virtualenv
 SYSTEM_PYTHON = python3.10
 
-.PHONY: all test build clean docs
+.PHONY: all install test build clean docs
 
 all: build
 
@@ -15,6 +15,12 @@ $(PYTHON):
 	$(BIN)/pip install -r requirements.txt
 	$(BIN)/pip install tox
 	$(BIN)/pip install twine
+
+install: $(PYTHON)
+	bin/pip install -e .
+
+dev: install
+	bin/pip install -r tests-requirements.txt
 
 clean:
 	rm -rf $(BUILD_DIRS)
