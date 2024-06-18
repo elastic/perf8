@@ -62,7 +62,7 @@ async def add_mem3():
     data.append("r" * get_random(100, 20000))
 
 
-def some_math(i):
+async def some_math(i):
     if get_random(1, 20) == 2:
         print(f"[{os.getpid()}] Busy adding data! ({i}/{RANGE})")
         try:
@@ -82,7 +82,7 @@ async def main():
             # blocks for 2 secs
             time.sleep(2)
 
-        t3 = asyncio.get_running_loop().run_in_executor(None, some_math, i)
+        t3 = asyncio.create_task(some_math(i))
         await asyncio.gather(t, t2, t3)
 
     await disable()
