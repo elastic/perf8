@@ -30,7 +30,6 @@ more-itertools==10.3.0
 nh3==0.2.17
 numpy==1.26.4
 packaging==24.1
--e git+ssh://git@github.com/elastic/perf8.git@dbca7bd5b5ea94190b9f6c224c4269c1e263a110#egg=perf8
 pillow==10.3.0
 pkginfo==1.11.1
 platformdirs==4.2.2
