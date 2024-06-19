@@ -121,6 +121,9 @@ class ResourceWatcher(BasePlugin):
 
         self.debug("Probing")
         probed_at = time.time()
+        if info.get("memory_info") is None:
+            self.warning("Proc info is empty")
+            return
         current_rss = info["memory_info"].rss
         if current_rss > self.max_rss:
             self.max_rss = current_rss
