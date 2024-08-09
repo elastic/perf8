@@ -1,5 +1,5 @@
-psutil==5.9.5
-matplotlib==3.7.2
+psutil==6.0.0
+matplotlib==3.9.0
 flameprof==0.4
 memray==1.9.0
 gprof2dot==2022.7.29
