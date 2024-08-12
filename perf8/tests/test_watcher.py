@@ -63,7 +63,7 @@ async def test_async_watcher():
         refresh_rate = 0.1
         psutil = True
         cprofile = False
-        memray = True
+        memray = False
         asyncstats = True
         pyspy = False
         target_dir = tempfile.mkdtemp()

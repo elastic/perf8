@@ -26,6 +26,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+share
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -137,3 +138,7 @@ dmypy.json
 
 # test reports
 perf8-report/
+
+# jetbrains
+.idea
+*.iml
